@@ -34,10 +34,10 @@ static int __init init_hgd(void)
     return 0; 
 } 
  
-static void __exit hgd_hgd(void) 
+static void __exit exit_hgd(void) 
 { 
     pr_info("Goodbye, world 2\n"); 
 } 
 
-module_init(hgd_init); 
-module_exit(hgd_init); 
+module_init(init_hgd); 
+module_exit(exit_hgd); 
