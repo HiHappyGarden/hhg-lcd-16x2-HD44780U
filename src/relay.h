@@ -21,23 +21,7 @@
 // SOFTWARE.
 
 
-#include <linux/kernel.h> /* Needed for pr_info() */ 
-#include <linux/module.h> /* Needed by all modules */
+#ifndef _RELAY_HGD_H_
+#define _RELAY_HGD_H_
 
-MODULE_LICENSE("MIT");
-MODULE_AUTHOR("Antonio Salsi (passy.linux@zresa.it)"); 
-MODULE_DESCRIPTION("Happy GardenPi driver for get access to hardware resources"); 
-
-static int __init init_hgd(void) 
-{ 
-    pr_info("Hello, world 2\n"); 
-    return 0; 
-} 
- 
-static void __exit exit_hgd(void) 
-{ 
-    pr_info("Goodbye, world 2\n"); 
-} 
-
-module_init(init_hgd); 
-module_exit(exit_hgd); 
+#endif //_LCD_HGD_H_
