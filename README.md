@@ -1,2 +1,2 @@
 # happy-gardenpi-driver
-Driver for get access to hardware resources
+Driver to get access to hardware resources
