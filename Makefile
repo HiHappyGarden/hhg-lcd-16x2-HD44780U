@@ -1,7 +1,7 @@
 # make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 
-obj-m += happygardenpidriver.o 
-happygardenpidriver-objs := src/happy_gardenpi_driver.o \
+obj-m += happy_gardenpi_driver.o 
+happy_gardenpi_driver-objs := src/main.o \
 							src/button.o \
 							src/lcd.o \
 							src/relay.o \
