@@ -85,7 +85,7 @@ void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free)
     }
 }
 
-const hgd_error_t * hgd_erro_get_last(void)
+inline const hgd_error_t * hgd_erro_get_last(void)
 {
     return last_error;
 }

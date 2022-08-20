@@ -133,7 +133,7 @@ int __init hgd_driver_init(void)
     }
 
     /*Creating device*/
-    if ((device_create(hgd_class, NULL, hgd_dev, NULL, "hgd_device")) == NULL)
+    if ((device_create(hgd_class, NULL, hgd_dev, NULL, HGD_NAME)) == NULL)
     {
         pr_err("Cannot create the Device \n");
         goto r_device;
