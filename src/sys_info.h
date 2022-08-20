@@ -16,11 +16,25 @@
  */
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
 
-#define HGD_NAME "happy_gardenpi_driver" 
+#ifndef _HDG_SYS_INFO_
+#define _HDG_SYS_INFO_
 
-typedef unsigned char uint8_t;
+#include "error.h"
+
+/**
+ * @brief Init pin configuration
+ * 
+ * @param[out] error if pass NULL not return erro 
+ * @return 0 init correctly
+ * @return true some error
+ */
+bool hgs_sys_info_init(hgd_error_t** error);
+
+/**
+ * @brief Free pin config
+ * 
+ */
+void hgd_sys_info_free(void);
 
 #endif

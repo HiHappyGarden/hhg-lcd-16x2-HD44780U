@@ -29,24 +29,24 @@
 static hgd_error_t *last_error = NULL;
 
 
-_Bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
+bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
 {
     if(error == NULL)
     {
         last_error = NULL;
-        return 0;
+        return false;
     }
     *error = vmalloc(sizeof(hgd_error_t));
     if(!*error)
     {
         last_error = NULL;
-        return 0;
+        return false;
     }
     (*error)->code = code;
 
     strncpy((*error)->msg, msg, MSG_LEN_ERROR_HGD);
     last_error = *error;
-    return 1;
+    return true;
 }
 
 void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free)

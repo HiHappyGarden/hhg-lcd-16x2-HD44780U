@@ -16,11 +16,23 @@
  */
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#include "led.h"
+#include "pin_config.h"
 
-#define HGD_NAME "happy_gardenpi_driver" 
+void hgd_led_set_state(bool state)
+{
+    if(hgd_led_get_state() != state)
+    {
+        gpio_set_value(HGD_LED_GPIO, state);
+    }
+}
 
-typedef unsigned char uint8_t;
+inline void hgd_led_toggle(void)
+{
+    hgd_led_set_state(!gpio_get_value(HGD_LED_GPIO));
+}
 
-#endif
+inline bool hgd_led_get_state(void)
+{
+    return gpio_get_value(HGD_LED_GPIO);
+}

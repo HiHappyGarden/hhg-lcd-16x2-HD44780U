@@ -4,6 +4,9 @@
         "kernel.h": "c",
         "error.h": "c",
         "string.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "types.h": "c",
+        "posix_types.h": "c",
+        "pin_config.h": "c"
     }
 }

@@ -6,7 +6,10 @@ happy_gardenpi_driver-objs := src/main.o \
 							src/lcd.o \
 							src/relay.o \
 							src/pin_config.o \
-							src/error.o 
+							src/error.o \
+							src/led.o \
+							src/sys_info.o 
+
 ccflags-y := -std=gnu17 -Wno-declaration-after-statement
 
 PWD := $(CURDIR)

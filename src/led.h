@@ -16,11 +16,31 @@
  */
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#ifndef _HDG_LED_
+#define _HDG_LED_
 
-#define HGD_NAME "happy_gardenpi_driver" 
+#include <linux/init.h>
 
-typedef unsigned char uint8_t;
+/**
+ * @brief Turn on/off led
+ * 
+ * @param set true = on
+ * @param set false = off
+ */
+void hgd_led_set_state(bool set);
+
+/**
+ * @brief Togle led
+ * 
+ */
+void hgd_led_toggle(void);
+
+/**
+ * @brief Get actula led status
+ * 
+ * @return true Turn on
+ * @return false Turn off
+ */
+bool hgd_led_get_state(void);
 
 #endif

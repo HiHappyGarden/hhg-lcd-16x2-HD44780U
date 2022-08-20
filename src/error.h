@@ -20,6 +20,8 @@
 #ifndef _HDG_ERROR_
 #define _HDG_ERROR_
 
+#include <linux/init.h>
+
 #define MSG_LEN_ERROR_HGD (30)
 
 /**
@@ -27,7 +29,9 @@
  */
 typedef enum 
 {
-    HDG_ERROR_NONE
+    HGD_ERROR_GPIO_NOT_VALID = 0x01,
+    HGD_ERROR_GPIO_REQUEST,
+    HGD_ERROR_NONE
 } hgd_error_code_t;
 
 /**
@@ -43,9 +47,10 @@ typedef struct
  * @brief Build new error
  * 
  * @param error 
- * @return _Bool 
+ * @return 0 ok 
+ * @return 0 error 
  */
-_Bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg);
+bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg);
 
 /**
  * @brief Prinnt and free error
@@ -54,7 +59,7 @@ _Bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
  * @param msg addtidional message to add if NULL not print nothing
  * @param free 0 not free
  */
-void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free);
+void hgd_error_print(hgd_error_t* error, const char* msg, bool free);
 
 /**
  * @brief Gel last error

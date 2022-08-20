@@ -25,10 +25,12 @@
 #include <linux/delay.h>
 #include <linux/uaccess.h> //copy_to/from_user()
 
-#include "pin_config.h"
 #include "constants.h"
 #include "error.h"
 #include "log.h"
+#include "pin_config.h"
+#include "sys_info.h"
+#include "led.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
@@ -85,6 +87,7 @@ int hgd_release(struct inode *inode, struct file *file)
 ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
 
+    hgd_led_toggle();
     pr_info("Read function");
 
     return 0;
@@ -95,6 +98,7 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 */
 ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
+
 
     pr_info("Write function");
 
@@ -139,7 +143,22 @@ int __init hgd_driver_init(void)
         goto r_device;
     }
 
-    pr_info("Device Driver Insert...Done!!!\n");
+    //load pin config
+    hgd_error_t* error = NULL;
+
+    if(hgs_pin_config_init(&error))
+    {
+        pr_err("Cannot init gpio config code=%u msg:%s\n", error->code, error->msg);
+        goto r_device;
+    }
+
+    if(hgs_sys_info_init(&error))
+    {
+        pr_err("Cannot init gpio config code=%u msg:%s\n", error->code, error->msg);
+        goto r_device;
+    }
+
+    pr_info("Happy GarderPI Driver Insert...Done!!!\n");
     return 0;
 
 r_device:
@@ -159,11 +178,16 @@ r_unreg:
 */
 static void __exit hgd_driver_exit(void)
 {
+    hgd_pin_config_unexport();
+    hgd_pin_config_free();
+
+    hgd_sys_info_free();
+    
     device_destroy(hgd_class, hgd_dev);
     class_destroy(hgd_class);
     cdev_del(&hgd_cdev);
     unregister_chrdev_region(hgd_dev, 1);
-    pr_info("Device Driver Remove...Done!!\n");
+    pr_info("Happy GarderPI Driver Remove...Done!!\n");
 }
 
 module_init(hgd_driver_init);

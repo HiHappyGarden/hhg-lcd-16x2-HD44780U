@@ -16,11 +16,18 @@
  */
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#include "sys_info.h"
 
-#define HGD_NAME "happy_gardenpi_driver" 
+#include <linux/init.h>
 
-typedef unsigned char uint8_t;
+bool hgs_sys_info_init(hgd_error_t** error)
+{
 
-#endif
+    return true;
+}
+
+
+void hgd_sys_info_free(void)
+{
+
+}
