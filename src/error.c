@@ -21,48 +21,92 @@
 // SOFTWARE.
 
 #include "error.h"
+#include "log.h"
 
+#include <linux/kernel.h>
 #include <linux/vmalloc.h>
 #include <linux/string.h>
-
-#include <stddef.h>
-
+#include <linux/stddef.h>
 
 
-hgd_error_t *hgd_last_error = NULL;
+
+static hgd_error_t *last_error = NULL;
 
 
-_Bool hgd_new_error(hgd_error_t** error, hgd_error_code_t code, const char* msg)
+_Bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
 {
     if(error == NULL)
     {
-        hgd_last_error = NULL;
+        last_error = NULL;
         return 0;
     }
     *error = vmalloc(sizeof(hgd_error_t));
     if(!*error)
     {
-        hgd_last_error = NULL;
+        last_error = NULL;
         return 0;
     }
     (*error)->code = code;
+
     strncpy((*error)->msg, msg, MSG_LEN_ERROR_HGD);
-    hgd_last_error = *error;
+    last_error = *error;
     return 1;
 }
 
-void hgd_free(hgd_error_t** error)
+void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free)
+{
+    if(error == NULL)
+    {
+        return;
+    }
+
+    
+    if(msg)
+    {
+        static const char fmt[] = "%s: %s code=%u msg=%s";
+        size_t len = strlen(msg) + strlen(fmt) + strlen(HGD_NAME);
+        char* to_print = vmalloc(len);
+        if(!to_print)
+        {
+            return;
+        }
+        memzero_explicit(to_print, len);
+
+        sprintf(to_print, fmt, HGD_NAME, msg, error->code, error->msg);
+
+        pr_info("%s", to_print);
+
+        vfree(to_print);
+    }
+    else
+    {
+        pr_info("error code=%u msg=%s", error->code, error->msg);
+    }
+
+    if(free)
+    {
+        hgd_error_free(&error);
+    }
+}
+
+const hgd_error_t * hgd_erro_get_last(void)
+{
+    return last_error;
+}
+
+void hgd_error_free(hgd_error_t** error)
 {
     if(*error == NULL)
     {
         return;
     }
 
-    if(hgd_last_error == *error)
+    if(last_error == *error)
     {
-        hgd_last_error = NULL;
+        last_error = NULL;
     }
-    
+
     *error = NULL;
     vfree(*error);
 }
+

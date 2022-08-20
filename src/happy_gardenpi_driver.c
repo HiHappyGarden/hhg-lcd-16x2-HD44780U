@@ -30,6 +30,7 @@
 #include "pin_config.h"
 #include "constants.h"
 #include "error.h"
+#include "log.h"
 
 MODULE_LICENSE("MIT");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
@@ -91,12 +92,9 @@ static int __init hdg_init(void)
 
     hgd_error_t* error = NULL;
 
-    hgd_new_error(&error, 10, "test ciao");
+    hgd_error_new(&error, 10, "test ciao");
 
-
-    pr_info("data: ----code: %u msg:%s", error->code, error->msg);
-
-    hgd_free(&error);
+    hgd_error_print(error, "messaggio aggiuntivo", 1);
 
 
     return 0; /* everything is ok */

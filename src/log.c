@@ -20,10 +20,5 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
-
-#define HGD_NAME "happy_gardenpi_driver" 
-
-#endif
+#include "log.h"
+ 

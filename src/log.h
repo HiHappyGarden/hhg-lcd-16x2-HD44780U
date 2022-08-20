@@ -21,9 +21,14 @@
 // SOFTWARE.
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#ifndef _HDG_LOG_
+#define _HDG_LOG_
+#include "constants.h"
 
-#define HGD_NAME "happy_gardenpi_driver" 
+#ifdef pr_fmt
+#undef pr_fmt
+#define pr_fmt(fmt) HGD_NAME ": " fmt
+#endif
+
 
 #endif

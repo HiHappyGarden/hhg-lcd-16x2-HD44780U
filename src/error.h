@@ -43,21 +43,35 @@ typedef struct
     char msg[MSG_LEN_ERROR_HGD];    //!< Error message
 } hgd_error_t;
 
-extern hgd_error_t *hgd_last_error; //!< Last error triggered
-
 /**
  * @brief Build new error
  * 
  * @param error 
  * @return _Bool 
  */
-_Bool hgd_new_error(hgd_error_t** error, hgd_error_code_t code, const char* msg);
+_Bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg);
+
+/**
+ * @brief Prinnt and free error
+ * 
+ * @param error to print
+ * @param msg addtidional message to add if NULL not print nothing
+ * @param free 0 not free
+ */
+void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free);
+
+/**
+ * @brief Gel last error
+ * 
+ * @return const hgd_error_t* NULL il no error occured
+ */
+const hgd_error_t * hgd_erro_get_last(void);
 
 /**
  * @brief Free a rerro
  * 
  * @param error to free
  */
-void hgd_free(hgd_error_t** error);
+void hgd_error_free(hgd_error_t** error);
 
 #endif
