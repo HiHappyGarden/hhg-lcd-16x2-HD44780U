@@ -21,9 +21,9 @@
 // SOFTWARE.
 
 
-#ifndef _COSTANTS_HGD_H_
-#define _COSTANTS_HGD_H_
+#ifndef _HDG_COSTANTS_
+#define _HDG_COSTANTS_
 
 #define HGD_NAME "Happy GradernPI driver" 
 
-#endif //_COSTANTS_HGD_H_
+#endif

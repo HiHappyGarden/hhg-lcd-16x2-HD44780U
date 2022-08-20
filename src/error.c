@@ -20,31 +20,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "error.h"
 
-#ifndef _HDG_PIN_CONFIG_
-#define _HDG_PIN_CONFIG_
+#include <linux/vmalloc.h>
+#include <linux/string.h>
 
-#define HGD_BUTTON_PIN      5 //!< Button pin
+#include <stddef.h>
 
-#define HGD_RELEAY_IN1_PIN  22 //!< Releay port 1
-#define HGD_RELEAY_IN2_PIN  24 //!< Releay port 2
-#define HGD_RELEAY_IN3_PIN  26 //!< Releay port 3
-#define HGD_RELEAY_IN4_PIN  28 //!< Releay port 4
 
-#define HGD_LCD_RS_PIN      26 //!< Register select  
-#define HGD_LCD_E_PIN       19 //!< Enable
-#define HGD_LCD_BL_PIN      23 //!< Balcklighting anode
-#define HGD_LCD_D4_PIN      33 //!< Bit 0
-#define HGD_LCD_D5_PIN      31 //!< Bit 1
-#define HGD_LCD_D6_PIN      29 //!< Bit 2
-#define HGD_LCD_D7_PIN      27 //!< Bit 3
 
-/**
- * @brief Init pin configuration
- * 
- * @return true init correctly
- * @return false some error
- */
-_Bool init_pin_config(void);
+hgd_error_t *hgd_last_error = NULL;
 
-#endif
+
+_Bool hgd_new_error(hgd_error_t** error, hgd_error_code_t code, const char* msg)
+{
+    if(error == NULL)
+    {
+        hgd_last_error = NULL;
+        return 0;
+    }
+    *error = vmalloc(sizeof(hgd_error_t));
+    if(!*error)
+    {
+        hgd_last_error = NULL;
+        return 0;
+    }
+    (*error)->code = code;
+    strncpy((*error)->msg, msg, MSG_LEN_ERROR_HGD);
+    hgd_last_error = *error;
+    return 1;
+}
+
+void hgd_free(hgd_error_t** error)
+{
+    if(*error == NULL)
+    {
+        return;
+    }
+
+    if(hgd_last_error == *error)
+    {
+        hgd_last_error = NULL;
+    }
+    
+    *error = NULL;
+    vfree(*error);
+}

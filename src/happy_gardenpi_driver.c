@@ -20,27 +20,92 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/string.h>
 #include <linux/gpio.h>
+#include <linux/proc_fs.h>
+
+#include "pin_config.h"
+#include "constants.h"
+#include "error.h"
 
 MODULE_LICENSE("MIT");
-MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>"); 
-MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources"); 
+MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
+MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
 
-static int __init init_hgd(void) 
-{ 
-    pr_info("Hello, world 2\n"); 
-    return 0; 
-} 
- 
-static void __exit exit_hgd(void) 
-{ 
-    pr_info("Goodbye, world 2\n"); 
-} 
+struct proc_dir_entry *Our_Proc_File;
 
-module_init(init_hgd); 
-module_exit(exit_hgd); 
+int procfile_read(char *buffer,
+                  char **buffer_location,
+                  off_t offset, int buffer_length, int *eof, void *data)
+{
+    int ret;
+    printk(KERN_INFO "procfile_read (/proc/%s) called\n", HGD_NAME);
+
+    /*
+     * We give all of our information in one go, so if the
+     * user asks us if we have more information the
+     * answer should always be no.
+     *
+     * This is important because the standard read
+     * function from the library would continue to issue
+     * the read system call until the kernel replies
+     * that it has no more information, or until its
+     * buffer is filled.
+     */
+    if (offset > 0)
+    {
+        /* we have finished to read, return 0 */
+        ret = 0;
+    }
+    else
+    {
+        /* fill the buffer, return the buffer size */
+        ret = sprintf(buffer, "HelloWorld!\n");
+    }
+    return ret;
+}
+
+static int __init hdg_init(void)
+{
+    // Our_Proc_File = create_proc_entry(HGD_NAME, 0644, NULL);
+
+    // if (Our_Proc_File == NULL)
+    // {
+    //     proc_create_data(HGD_NAME, &proc_root);
+    //     printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",
+    //            procfs_name);
+    //     return -ENOMEM;
+    // }
+
+    // Our_Proc_File->read_proc = procfile_read;
+    // Our_Proc_File->owner = THIS_MODULE;
+    // Our_Proc_File->mode = S_IFREG | S_IRUGO;
+    // Our_Proc_File->uid = 0;
+    // Our_Proc_File->gid = 0;
+    // Our_Proc_File->size = 37;
+
+    // printk(KERN_INFO "/proc/%s created\n", procfs_name);
+
+    hgd_error_t* error = NULL;
+
+    hgd_new_error(&error, 10, "test ciao");
+
+
+    pr_info("data: ----code: %u msg:%s", error->code, error->msg);
+
+    hgd_free(&error);
+
+
+    return 0; /* everything is ok */
+}
+
+static void __exit hdg_exit(void)
+{
+    pr_info("Goodbye, world 2\n");
+}
+
+module_init(hdg_init);
+module_exit(hdg_exit);

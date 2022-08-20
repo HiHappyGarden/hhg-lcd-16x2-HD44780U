@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 
-#ifndef _RELAY_HGD_H_
-#define _RELAY_HGD_H_
+#ifndef _HDG_RELAY_
+#define _HDG_RELAY_
 
-#endif //_LCD_HGD_H_
+#endif

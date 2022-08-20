@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 
-#ifndef _LCD_HGD_H_
-#define _LCD_HGD_H_
+#ifndef _HDG_LCD_
+#define _HDG_LCD_
 
-#endif //_LCD_HGD_H_
+#endif

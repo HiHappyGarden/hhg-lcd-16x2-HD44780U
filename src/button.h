@@ -21,8 +21,9 @@
 // SOFTWARE.
 
 
-#ifndef _BUTTON_HGD_H_
-#define _BUTTON_HGD_H_
+#ifndef _HDG_BUTTON_
+#define _HDG_BUTTON_
 
 
-#endif //_BUTTON_HGD_H_
+
+#endif

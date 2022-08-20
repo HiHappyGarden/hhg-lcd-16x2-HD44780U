@@ -21,30 +21,43 @@
 // SOFTWARE.
 
 
-#ifndef _HDG_PIN_CONFIG_
-#define _HDG_PIN_CONFIG_
+#ifndef _HDG_ERROR_
+#define _HDG_ERROR_
 
-#define HGD_BUTTON_PIN      5 //!< Button pin
-
-#define HGD_RELEAY_IN1_PIN  22 //!< Releay port 1
-#define HGD_RELEAY_IN2_PIN  24 //!< Releay port 2
-#define HGD_RELEAY_IN3_PIN  26 //!< Releay port 3
-#define HGD_RELEAY_IN4_PIN  28 //!< Releay port 4
-
-#define HGD_LCD_RS_PIN      26 //!< Register select  
-#define HGD_LCD_E_PIN       19 //!< Enable
-#define HGD_LCD_BL_PIN      23 //!< Balcklighting anode
-#define HGD_LCD_D4_PIN      33 //!< Bit 0
-#define HGD_LCD_D5_PIN      31 //!< Bit 1
-#define HGD_LCD_D6_PIN      29 //!< Bit 2
-#define HGD_LCD_D7_PIN      27 //!< Bit 3
+#define MSG_LEN_ERROR_HGD (30)
 
 /**
- * @brief Init pin configuration
- * 
- * @return true init correctly
- * @return false some error
+ * @brief Error code 
  */
-_Bool init_pin_config(void);
+typedef enum 
+{
+    HDG_ERROR_NONE
+} hgd_error_code_t;
+
+/**
+ * @brief Error structure
+ */
+typedef struct
+{
+    hgd_error_code_t code;          //!< Error code
+    char msg[MSG_LEN_ERROR_HGD];    //!< Error message
+} hgd_error_t;
+
+extern hgd_error_t *hgd_last_error; //!< Last error triggered
+
+/**
+ * @brief Build new error
+ * 
+ * @param error 
+ * @return _Bool 
+ */
+_Bool hgd_new_error(hgd_error_t** error, hgd_error_code_t code, const char* msg);
+
+/**
+ * @brief Free a rerro
+ * 
+ * @param error to free
+ */
+void hgd_free(hgd_error_t** error);
 
 #endif

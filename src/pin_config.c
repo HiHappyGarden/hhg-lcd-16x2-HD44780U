@@ -22,3 +22,8 @@
 
 #include "relay.h"
 
+_Bool init_pin_config(void)
+{
+
+    return 1;
+}
