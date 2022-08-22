@@ -25,6 +25,7 @@
 #include <linux/delay.h>
 #include <linux/uaccess.h> //copy_to/from_user()
 
+
 #include "constants.h"
 #include "error.h"
 #include "log.h"
@@ -35,21 +36,25 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
 MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
+MODULE_INFO(intree, "Y");
 
 // data
 static dev_t hgd_dev = 0;
-static struct class *hgd_class;
+static struct class* hgd_class;
 static struct cdev hgd_cdev;
+static struct cdev hgd_cdev;
+
+// static atomic_t device_busy = ATOMIC_INIT(0);;
 
 // static decl
 static int __init hgd_driver_init(void);
 static void __exit hgd_driver_exit(void);
 
 // static decl
-static int hgd_open(struct inode *inode, struct file *file);
-static int hgd_release(struct inode *inode, struct file *file);
-static ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off);
-static ssize_t hgd_write(struct file *filp, const char *buf, size_t len, loff_t *off);
+static int hgd_open(struct inode* inode, struct file* file);
+static int hgd_release(struct inode* inode, struct file* file);
+static ssize_t hgd_read(struct file* filp, char __user* buf, size_t len, loff_t* off);
+static ssize_t hgd_write(struct file* filp, const char* buf, size_t len, loff_t* off);
 
 // File operation structure
 static struct file_operations fops =
@@ -64,44 +69,48 @@ static struct file_operations fops =
 /*
 ** This function will be called when we open the Device file
 */
-int hgd_open(struct inode *inode, struct file *file)
+int hgd_open(struct inode* inode, struct file* file)
 {
     pr_info("Device File Opened...!!!\n");
 
+    // if(atomic_read(&device_busy) > 0)
+    // {
+    //     pr_err("device busy");
+    //     return -EBUSY;
+    // }
+
+    //atomic_inc(&device_busy);
     return 0;
 }
 
 /*
 ** This function will be called when we close the Device file
 */
-int hgd_release(struct inode *inode, struct file *file)
+int hgd_release(struct inode* inode, struct file* file)
 {
     pr_info("Device File Closed...!!!\n");
-
+    //atomic_dec(&device_busy);
     return 0;
 }
 
 /*
 ** This function will be called when we read the Device file
 */
-ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
+ssize_t hgd_read(struct file* filp, char __user* buf, size_t len, loff_t* off)
 {
 
-    hgd_led_toggle();
+    hgd_led_set_state(false);
     pr_info("Read function");
-
     return 0;
 }
 
 /*
 ** This function will be called when we write the Device file
 */
-ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
+ssize_t hgd_write(struct file* filp, const char __user* buf, size_t len, loff_t* off)
 {
-
-
+    hgd_led_set_state(true);
     pr_info("Write function");
-
     return len;
 }
 
@@ -145,16 +154,15 @@ int __init hgd_driver_init(void)
 
     //load pin config
     hgd_error_t* error = NULL;
-
-    if(hgs_pin_config_init(&error))
+    if(!hgs_pin_config_init(&error))
     {
-        pr_err("Cannot init gpio config code=%u msg:%s\n", error->code, error->msg);
+        hgd_error_print(error, "Cannot init gpio config", true);
         goto r_device;
     }
 
-    if(hgs_sys_info_init(&error))
+    if(!hgs_sys_info_init(&error))
     {
-        pr_err("Cannot init gpio config code=%u msg:%s\n", error->code, error->msg);
+        hgd_error_print(error, "Cannot init sysfs", true);        
         goto r_device;
     }
 

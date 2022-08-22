@@ -21,22 +21,22 @@
 #define _HDG_PIN_CONFIG_
 
 /// IN | Button pin
-#define HGD_BUTTON_GPIO      (5) 
+#define HGD_BUTTON_GPIO      (3) 
 
 /// IN | Button pin
-#define HGD_LED_GPIO         (18)
+#define HGD_LED_GPIO         (24)
 
 /// OUT | Releay port 1
-#define HGD_RELEAY_IN1_GPIO  (22) 
+#define HGD_RELEAY_IN1_GPIO  (25) 
 
 /// OUT | Releay port 2
-#define HGD_RELEAY_IN2_GPIO  (24)
+#define HGD_RELEAY_IN2_GPIO  (8)
 
 /// OUT | Releay port 3
-#define HGD_RELEAY_IN3_GPIO  (26) 
+#define HGD_RELEAY_IN3_GPIO  (7) 
 
 /// OUT | Releay port 4
-#define HGD_RELEAY_IN4_GPIO  (28)
+#define HGD_RELEAY_IN4_GPIO  (1) 
 
 /// OUT | Register select
 #define HGD_LCD_RS_GPIO      (26)  
@@ -45,19 +45,19 @@
 #define HGD_LCD_E_GPIO       (19)
 
 /// OUT | Balcklighting anode
-#define HGD_LCD_BL_GPIO      (23) 
+#define HGD_LCD_BL_GPIO      (13) 
 
 /// OUT | Bit 0
-#define HGD_LCD_D4_GPIO      (33) 
+#define HGD_LCD_D4_GPIO      (6) 
 
 /// OUT | Bit 1
-#define HGD_LCD_D5_GPIO      (31) 
+#define HGD_LCD_D5_GPIO      (5) 
 
 /// OUT | Bit 2
-#define HGD_LCD_D6_GPIO      (29) 
+#define HGD_LCD_D6_GPIO      (0) 
 
 ///< OUT | Bit 3
-#define HGD_LCD_D7_GPIO      (27) 
+#define HGD_LCD_D7_GPIO      (11) 
 
 #include "error.h"
 #include "constants.h"

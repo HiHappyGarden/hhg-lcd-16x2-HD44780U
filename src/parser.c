@@ -16,18 +16,5 @@
  */
 
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#include "lcd.h"
 
-#define HGD_NAME "happy_gardenpi_driver" 
-
-typedef unsigned char __u8;
-typedef void* hgd_ptr;
-
-typedef struct 
-{
-    hgd_ptr first;
-    hgd_ptr second;
-}hgd_pair;
-
-#endif

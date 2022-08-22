@@ -15,19 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "constants.h"
 
-#ifndef _HDG_COSTANTS_
-#define _HDG_COSTANTS_
+#ifndef _HDG_PARSER_
+#define _HDG_PARSER_
 
-#define HGD_NAME "happy_gardenpi_driver" 
 
-typedef unsigned char __u8;
-typedef void* hgd_ptr;
-
-typedef struct 
-{
-    hgd_ptr first;
-    hgd_ptr second;
-}hgd_pair;
 
 #endif
