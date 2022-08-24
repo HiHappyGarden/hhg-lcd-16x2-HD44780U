@@ -21,6 +21,13 @@
 #define _HDG_SYS_INFO_
 
 #include "error.h"
+#include "constants.h"
+
+#include<linux/sysfs.h> 
+#include<linux/kobject.h> 
+
+enum hgd_relay_type;
+typedef enum hgd_relay_type hgd_relay_t;
 
 /**
  * @brief Init pin configuration
@@ -29,7 +36,12 @@
  * @return 0 init correctly
  * @return true some error
  */
-bool hgs_sys_info_init(hgd_error_t** error);
+bool hgd_sys_info_init(hgd_error_t** error);
+
+void hgd_sys_info_set_led(__u8 status);
+void hgd_sys_info_set_button(__u8 status);
+void hgd_sys_info_set_lcd(const char* status);
+void hgd_sys_info_set_releay(hgd_relay_t status);
 
 /**
  * @brief Free pin config

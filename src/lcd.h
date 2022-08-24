@@ -19,7 +19,9 @@
 
 #ifndef _HDG_LCD_
 #define _HDG_LCD_
+#include "constants.h"
 
-
+extern const __u8 HDG_LCD_WIDTH;
+extern const __u8 HDG_LCD_HEIGHT;
 
 #endif

@@ -18,3 +18,5 @@
 
 #include "lcd.h"
 
+const __u8 HDG_LCD_WIDTH = 16;
+const __u8 HDG_LCD_HEIGHT = 2;

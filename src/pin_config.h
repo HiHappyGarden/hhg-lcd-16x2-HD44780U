@@ -71,7 +71,7 @@
  * @return 0 init correctly
  * @return true some error
  */
-bool hgs_pin_config_init(hgd_error_t** error);
+bool hgd_pin_config_init(hgd_error_t** error);
 
 /**
  * @brief Free pin config

@@ -29,9 +29,12 @@
  */
 typedef enum 
 {
+    HGD_ERROR_NONE,
     HGD_ERROR_GPIO_NOT_VALID = 0x01,
     HGD_ERROR_GPIO_REQUEST,
-    HGD_ERROR_NONE
+    HGD_ERROR_SYS_INFO_SYSFS_CREATE,
+    HGD_ERROR_SYS_INFO_SYSFS_NO_VHEAP,
+    
 } hgd_error_code_t;
 
 /**

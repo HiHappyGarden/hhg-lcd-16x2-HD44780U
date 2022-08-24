@@ -71,7 +71,7 @@ static struct file_operations fops =
 */
 int hgd_open(struct inode* inode, struct file* file)
 {
-    pr_info("Device File Opened...!!!\n");
+    pr_info("Device File Opened...\n");
 
     // if(atomic_read(&device_busy) > 0)
     // {
@@ -88,7 +88,7 @@ int hgd_open(struct inode* inode, struct file* file)
 */
 int hgd_release(struct inode* inode, struct file* file)
 {
-    pr_info("Device File Closed...!!!\n");
+    pr_info("Device File Closed...\n");
     //atomic_dec(&device_busy);
     return 0;
 }
@@ -100,16 +100,18 @@ ssize_t hgd_read(struct file* filp, char __user* buf, size_t len, loff_t* off)
 {
 
     hgd_led_set_state(false);
+    hgd_sys_info_set_led(false);
     pr_info("Read function");
     return 0;
 }
 
-/*
+/* 
 ** This function will be called when we write the Device file
 */
 ssize_t hgd_write(struct file* filp, const char __user* buf, size_t len, loff_t* off)
 {
     hgd_led_set_state(true);
+    hgd_sys_info_set_led(true);
     pr_info("Write function");
     return len;
 }
@@ -154,21 +156,27 @@ int __init hgd_driver_init(void)
 
     //load pin config
     hgd_error_t* error = NULL;
-    if(!hgs_pin_config_init(&error))
-    {
-        hgd_error_print(error, "Cannot init gpio config", true);
-        goto r_device;
-    }
 
-    if(!hgs_sys_info_init(&error))
+    if(!hgd_sys_info_init(&error))
     {
         hgd_error_print(error, "Cannot init sysfs", true);        
-        goto r_device;
+        goto r_sys_info;
     }
 
-    pr_info("Happy GarderPI Driver Insert...Done!!!\n");
+    if(!hgd_pin_config_init(&error))
+    {
+        hgd_error_print(error, "Cannot init gpio config", true);
+        goto r_pin_config;
+    }
+
+
+    pr_info("Happy GarderPI Driver Insert...Done\n");
     return 0;
 
+r_pin_config:
+    hgd_pin_config_free();
+r_sys_info:
+    hgd_sys_info_free();
 r_device:
     device_destroy(hgd_class, hgd_dev);
 r_class:
@@ -195,7 +203,7 @@ static void __exit hgd_driver_exit(void)
     class_destroy(hgd_class);
     cdev_del(&hgd_cdev);
     unregister_chrdev_region(hgd_dev, 1);
-    pr_info("Happy GarderPI Driver Remove...Done!!\n");
+    pr_info("Happy GarderPI Driver remove... done");
 }
 
 module_init(hgd_driver_init);

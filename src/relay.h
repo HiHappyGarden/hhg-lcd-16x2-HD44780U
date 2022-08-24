@@ -20,4 +20,12 @@
 #ifndef _HDG_RELAY_
 #define _HDG_RELAY_
 
+typedef enum hgd_relay_type
+{
+    HGD_RELEAY_1 = 1,
+    HGD_RELEAY_2 = 2,
+    HGD_RELEAY_3 = 3,
+    HGD_RELEAY_4 = 4
+}hgd_relay_t;
+
 #endif

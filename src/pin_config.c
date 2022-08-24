@@ -36,7 +36,7 @@ static bool hgd_pin_config_is_valid(hgd_error_t** error);
 static bool hgd_pin_config_request(hgd_error_t** error);
 static bool hgd_pin_config_request(hgd_error_t** error);
 
-bool hgs_pin_config_init(hgd_error_t** error)
+bool hgd_pin_config_init(hgd_error_t** error)
 {
 
     pr_info("Checking the GPIOs are valid or not!");
