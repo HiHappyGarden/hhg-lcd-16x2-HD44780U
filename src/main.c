@@ -25,7 +25,6 @@
 #include <linux/delay.h>
 #include <linux/uaccess.h> //copy_to/from_user()
 
-
 #include "constants.h"
 #include "error.h"
 #include "log.h"
@@ -40,7 +39,7 @@ MODULE_INFO(intree, "Y");
 
 // data
 static dev_t hgd_dev = 0;
-static struct class* hgd_class;
+static struct class *hgd_class;
 static struct cdev hgd_cdev;
 static struct cdev hgd_cdev;
 
@@ -51,25 +50,25 @@ static int __init hgd_driver_init(void);
 static void __exit hgd_driver_exit(void);
 
 // static decl
-static int hgd_open(struct inode* inode, struct file* file);
-static int hgd_release(struct inode* inode, struct file* file);
-static ssize_t hgd_read(struct file* filp, char __user* buf, size_t len, loff_t* off);
-static ssize_t hgd_write(struct file* filp, const char* buf, size_t len, loff_t* off);
+static int hgd_open(struct inode *inode, struct file *file);
+static int hgd_release(struct inode *inode, struct file *file);
+static ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off);
+static ssize_t hgd_write(struct file *filp, const char *buf, size_t len, loff_t *off);
 
 // File operation structure
 static struct file_operations fops =
-{
-    .owner = THIS_MODULE,
-    .read = hgd_read,
-    .write = hgd_write,
-    .open = hgd_open,
-    .release = hgd_release,
+    {
+        .owner = THIS_MODULE,
+        .read = hgd_read,
+        .write = hgd_write,
+        .open = hgd_open,
+        .release = hgd_release,
 };
 
 /*
 ** This function will be called when we open the Device file
 */
-int hgd_open(struct inode* inode, struct file* file)
+int hgd_open(struct inode *inode, struct file *file)
 {
     pr_info("Device File Opened...\n");
 
@@ -79,40 +78,48 @@ int hgd_open(struct inode* inode, struct file* file)
     //     return -EBUSY;
     // }
 
-    //atomic_inc(&device_busy);
+    // atomic_inc(&device_busy);
     return 0;
 }
 
 /*
 ** This function will be called when we close the Device file
 */
-int hgd_release(struct inode* inode, struct file* file)
+int hgd_release(struct inode *inode, struct file *file)
 {
     pr_info("Device File Closed...\n");
-    //atomic_dec(&device_busy);
+    // atomic_dec(&device_busy);
     return 0;
 }
 
 /*
 ** This function will be called when we read the Device file
 */
-ssize_t hgd_read(struct file* filp, char __user* buf, size_t len, loff_t* off)
+ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
 
-    hgd_led_set_state(false);
-    hgd_sys_info_set_led(false);
+    // hgd_led_set_state(false);
+    // hgd_sys_info_set_led(false);
     pr_info("Read function");
     return 0;
 }
 
-/* 
+/*
 ** This function will be called when we write the Device file
 */
-ssize_t hgd_write(struct file* filp, const char __user* buf, size_t len, loff_t* off)
+ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
-    hgd_led_set_state(true);
-    hgd_sys_info_set_led(true);
-    pr_info("Write function");
+
+
+    char value[1024];
+    memset(value, 0, 1024);
+
+    copy_from_user(value , buf, len);
+
+    // hgd_led_set_state(true);
+    // hgd_sys_info_set_led(true);
+    pr_info("Write function %s", value);
+
     return len;
 }
 
@@ -154,23 +161,22 @@ int __init hgd_driver_init(void)
         goto r_device;
     }
 
-    //load pin config
-    hgd_error_t* error = NULL;
+    // load pin config
+    hgd_error_t *error = NULL;
 
-    if(!hgd_sys_info_init(&error))
-    {
-        hgd_error_print(error, "Cannot init sysfs", true);        
-        goto r_sys_info;
-    }
+    // if(!hgd_sys_info_init(&error))
+    // {
+    //     hgd_error_print(error, "Cannot init sysfs", true);
+    //     goto r_sys_info;
+    // }
 
-    if(!hgd_pin_config_init(&error))
+    if (!hgd_pin_config_init(&error))
     {
         hgd_error_print(error, "Cannot init gpio config", true);
         goto r_pin_config;
     }
 
-
-    pr_info("Happy GarderPI Driver Insert...Done\n");
+    pr_info("Happy GarderPI driver insert...Done\n");
     return 0;
 
 r_pin_config:
@@ -198,12 +204,12 @@ static void __exit hgd_driver_exit(void)
     hgd_pin_config_free();
 
     hgd_sys_info_free();
-    
+
     device_destroy(hgd_class, hgd_dev);
     class_destroy(hgd_class);
     cdev_del(&hgd_cdev);
     unregister_chrdev_region(hgd_dev, 1);
-    pr_info("Happy GarderPI Driver remove... done");
+    pr_info("Happy GarderPI driver remove... done");
 }
 
 module_init(hgd_driver_init);

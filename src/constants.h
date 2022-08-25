@@ -20,6 +20,7 @@
 #define _HDG_COSTANTS_
 
 #define HGD_NAME "happy_gardenpi_driver" 
+#define HGD_TO_STR(_str) #_str
 
 typedef unsigned char __u8;
 typedef void* hgd_ptr;
