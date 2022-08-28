@@ -33,6 +33,7 @@
 
 bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
 {
+    pr_info(">%.*s<", len, buf);
     if (!parser)
     {
         return false;

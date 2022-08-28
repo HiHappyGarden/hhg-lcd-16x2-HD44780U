@@ -33,7 +33,8 @@
 #include "sys_info.h"
 #include "led.h"
 
-#define READ_BUF_LEN 256 
+#define READ_BUF_LEN (256) 
+#define NOT_DEF (3) 
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
@@ -101,19 +102,27 @@ int hgd_release(struct inode *inode, struct file *file)
 ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 { 
     char msg[READ_BUF_LEN];
-    memset(msg, 0, READ_BUF_LEN);
+    memset(msg, '\0', READ_BUF_LEN);
 
-    sprintf(msg, "HGD_LED:\t\t%u\n", hgd_led_get_state());
-    sprintf(msg, "HGD_BUTTON:\t\t%u\n", 3);
-    sprintf(msg, "HGD_LCD:\t\t%u\n", 3);
-    sprintf(msg, "HGD_RELAY_1:\t\t%u\n", 3);
-    sprintf(msg, "HGD_RELAY_2:\t\t%u\n", 3);
-    sprintf(msg, "HGD_RELAY_3:\t\t%u\n", 3);
-    sprintf(msg, "HGD_RELAY_4:\t\t%u\n", 3);
+    sprintf(msg, "HGD_LED:\t\t%u\n" \
+     "HGD_BUTTON:\t\t%u\n" \
+     "HGD_LCD:\t\t\t%u\n" \
+     "HGD_RELAY_1:\t\t%u\n" \
+     "HGD_RELAY_2:\t\t%u\n" \
+     "HGD_RELAY_3:\t\t%u\n" \
+     "HGD_RELAY_4:\t\t%u\n" 
+     , hgd_led_get_state()
+     , NOT_DEF
+     , NOT_DEF
+     , NOT_DEF
+     , NOT_DEF
+     , NOT_DEF
+     , NOT_DEF
+     );
+    
+    pr_info("%s", msg);
 
-    __u16 __maybe_unused count = copy_to_user( buf, msg, len);
-
-    return 0;
+    return copy_to_user( buf, msg, strlen(msg));
 }
 
 /*
@@ -122,20 +131,26 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
 
-    char params[HDG_PARSER_BUF_MAX];
-    memset(params, 0, HDG_PARSER_BUF_MAX);
+    char* params = (char*)kmalloc(len, GFP_KERNEL);
+    if (params == NULL) {
+        return -ENOMEM;
+    }
     if(len > HDG_PARSER_BUF_MAX)
     {
+        kfree(params);
         return -EINVAL;
     }
-    if(copy_from_user(params, buf, len) == 0)
+    if(copy_from_user(params, buf, len) != 0)
     {
+        kfree(params);
         return -EINVAL;
     }
 
     hgd_parser_t parsed;
-    if (!hgd_parser_params(params, sizeof(params), &parsed))
+    if (!hgd_parser_params(params, len, &parsed))
     {
+        pr_info("--1.3");
+        kfree(params);
         return -EINVAL;
     }
 
@@ -170,9 +185,13 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
 
         return 1;
     default:
+        pr_info("--1.5");
+        kfree(params);
         return -EINVAL;
     }
 
+    kfree(params);
+pr_info("--6");
     return -EINVAL;
 }
 
