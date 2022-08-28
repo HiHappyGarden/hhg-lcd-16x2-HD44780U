@@ -56,7 +56,7 @@ bool hgd_pin_config_init(hgd_error_t** error)
     gpio_direction_output(HGD_BUTTON_GPIO, 1);
     gpio_direction_output(HGD_LED_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN1_GPIO, 0);
-    gpio_direction_output(HGD_RELEAY_IN2_GPIO, 0);
+    // gpio_direction_output(HGD_RELEAY_IN2_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN3_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN4_GPIO, 0);
     gpio_direction_output(HGD_LCD_RS_GPIO, 0);
@@ -79,7 +79,7 @@ bool hgd_pin_config_init(hgd_error_t** error)
     gpio_export(HGD_BUTTON_GPIO, false);
     gpio_export(HGD_LED_GPIO, false);
     gpio_export(HGD_RELEAY_IN1_GPIO, false);
-    gpio_export(HGD_RELEAY_IN2_GPIO, false);
+    // gpio_export(HGD_RELEAY_IN2_GPIO, false);
     gpio_export(HGD_RELEAY_IN3_GPIO, false);
     gpio_export(HGD_RELEAY_IN4_GPIO, false);
     gpio_export(HGD_LCD_RS_GPIO, false);
@@ -102,7 +102,7 @@ void hgd_pin_config_unexport(void)
     gpio_unexport(HGD_BUTTON_GPIO);
     gpio_unexport(HGD_LED_GPIO);
     gpio_unexport(HGD_RELEAY_IN1_GPIO);
-    gpio_unexport(HGD_RELEAY_IN2_GPIO);
+    // gpio_unexport(HGD_RELEAY_IN2_GPIO);
     gpio_unexport(HGD_RELEAY_IN3_GPIO);
     gpio_unexport(HGD_RELEAY_IN4_GPIO);
     gpio_unexport(HGD_LCD_RS_GPIO);
@@ -119,7 +119,7 @@ void hgd_pin_config_free(void)
     gpio_free(HGD_BUTTON_GPIO);
     gpio_free(HGD_LED_GPIO);
     gpio_free(HGD_RELEAY_IN1_GPIO);
-    gpio_free(HGD_RELEAY_IN2_GPIO);
+    // gpio_free(HGD_RELEAY_IN2_GPIO);
     gpio_free(HGD_RELEAY_IN3_GPIO);
     gpio_free(HGD_RELEAY_IN4_GPIO);
     gpio_free(HGD_LCD_RS_GPIO);
@@ -137,7 +137,7 @@ bool hgd_pin_config_is_valid(hgd_error_t** error)
     HGD_IS_VALID(HGD_BUTTON_GPIO, "HGD_BUTTON_GPIO")
     HGD_IS_VALID(HGD_LED_GPIO, "HGD_LED_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN1_GPIO, "HGD_RELEAY_IN1_GPIO")
-    HGD_IS_VALID(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
+    // HGD_IS_VALID(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN3_GPIO, "HGD_RELEAY_IN3_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN4_GPIO, "HGD_RELEAY_IN4_GPIO")
     HGD_IS_VALID(HGD_LCD_RS_GPIO, "HGD_LCD_RS_GPIO")
@@ -157,7 +157,7 @@ bool hgd_pin_config_request(hgd_error_t** error)
     HGD_REQUEST(HGD_BUTTON_GPIO, "HGD_BUTTON_GPIO")
     HGD_REQUEST(HGD_LED_GPIO, "HGD_LED_GPIO")
     HGD_REQUEST(HGD_RELEAY_IN1_GPIO, "HGD_RELEAY_IN1_GPIO")
-    HGD_REQUEST(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
+    // HGD_REQUEST(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
     HGD_REQUEST(HGD_RELEAY_IN3_GPIO, "HGD_RELEAY_IN3_GPIO")
     HGD_REQUEST(HGD_RELEAY_IN4_GPIO, "HGD_RELEAY_IN4_GPIO")
     HGD_REQUEST(HGD_LCD_RS_GPIO, "HGD_LCD_RS_GPIO")

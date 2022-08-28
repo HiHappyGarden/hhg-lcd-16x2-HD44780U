@@ -40,7 +40,7 @@ bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
 
     memset(parser, 0, sizeof(hgd_parser_t));
 
-    char args[2][HDG_PARSER_MAX] = {
+    char args[2][HDG_PARSER_BUF_MAX] = {
         [0] = {0},
         [1] = {0},
     };
@@ -71,7 +71,7 @@ bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
         {
             if(check)
             {
-                if(no_buffer_overflow >= HDG_PARSER_MAX)
+                if(no_buffer_overflow >= HDG_PARSER_BUF_MAX)
                 {
                     return false;
                 }
@@ -82,7 +82,7 @@ bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
             } 
             else
             {
-                if(no_buffer_overflow >= HDG_PARSER_MAX)
+                if(no_buffer_overflow >= HDG_PARSER_BUF_MAX)
                 {
                     return false;
                 }
@@ -95,33 +95,33 @@ bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
         
     }
 
-    if(strncmp(args[0], HGD_TO_STR(HGD_LED), HDG_PARSER_MAX) == 0)
+    if(strncmp(args[0], HGD_TO_STR(HGD_LED), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_LED)
     }
-    else if(strncmp(args[0], HGD_TO_STR(HGD_BUTTON), HDG_PARSER_MAX) == 0)
+    else if(strncmp(args[0], HGD_TO_STR(HGD_BUTTON), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_BUTTON)
     }
-    if(strncmp(args[0], HGD_TO_STR(HGD_LCD), HDG_PARSER_MAX) == 0)
+    if(strncmp(args[0], HGD_TO_STR(HGD_LCD), HDG_PARSER_BUF_MAX) == 0)
     {
         parser->type = HGD_LCD;
         strncpy(parser->buff, ptr_after_arg0,  strlen(ptr_after_arg0));
         return true;
     }
-    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_1), HDG_PARSER_MAX) == 0)
+    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_1), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_RELAY_1)   
     }
-    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_2), HDG_PARSER_MAX) == 0)
+    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_2), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_RELAY_2)
     }
-    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_3), HDG_PARSER_MAX) == 0)
+    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_3), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_RELAY_3)
     }
-    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_4), HDG_PARSER_MAX) == 0)
+    else if(strncmp(args[0], HGD_TO_STR(HGD_RELAY_4), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_RELAY_4)
     }

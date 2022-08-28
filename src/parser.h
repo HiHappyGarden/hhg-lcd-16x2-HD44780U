@@ -21,7 +21,7 @@
 
 #include <linux/init.h>
 
-#define HDG_PARSER_MAX ((16 * 2) + 1)
+#define HDG_PARSER_BUF_MAX (48)
 
 typedef enum
 {
@@ -37,7 +37,7 @@ typedef enum
 typedef struct
 {
     hgd_parser_type_t type;
-    char buff[HDG_PARSER_MAX];
+    char buff[HDG_PARSER_BUF_MAX];
     __u8 status;
 } hgd_parser_t;
 
@@ -46,7 +46,7 @@ typedef struct
  *
  * @param buf data buffer from user
  * @param len buffer
- * @param parser data parsed (already alloced)
+ * @param[out] parser data parsed (already alloced)
  * @return true successful
  * @return false fail
  */

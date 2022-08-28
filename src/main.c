@@ -28,9 +28,12 @@
 #include "constants.h"
 #include "error.h"
 #include "log.h"
+#include "parser.h"
 #include "pin_config.h"
 #include "sys_info.h"
 #include "led.h"
+
+#define READ_BUF_LEN 256 
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
@@ -96,11 +99,20 @@ int hgd_release(struct inode *inode, struct file *file)
 ** This function will be called when we read the Device file
 */
 ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
-{
+{ 
+    char msg[READ_BUF_LEN];
+    memset(msg, 0, READ_BUF_LEN);
 
-    // hgd_led_set_state(false);
-    // hgd_sys_info_set_led(false);
-    pr_info("Read function");
+    sprintf(msg, "HGD_LED:\t\t%u\n", hgd_led_get_state());
+    sprintf(msg, "HGD_BUTTON:\t\t%u\n", 3);
+    sprintf(msg, "HGD_LCD:\t\t%u\n", 3);
+    sprintf(msg, "HGD_RELAY_1:\t\t%u\n", 3);
+    sprintf(msg, "HGD_RELAY_2:\t\t%u\n", 3);
+    sprintf(msg, "HGD_RELAY_3:\t\t%u\n", 3);
+    sprintf(msg, "HGD_RELAY_4:\t\t%u\n", 3);
+
+    __u16 __maybe_unused count = copy_to_user( buf, msg, len);
+
     return 0;
 }
 
@@ -110,17 +122,58 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
 
+    char params[HDG_PARSER_BUF_MAX];
+    memset(params, 0, HDG_PARSER_BUF_MAX);
+    if(len > HDG_PARSER_BUF_MAX)
+    {
+        return -EINVAL;
+    }
+    if(copy_from_user(params, buf, len) == 0)
+    {
+        return -EINVAL;
+    }
 
-    char value[1024];
-    memset(value, 0, 1024);
+    hgd_parser_t parsed;
+    if (!hgd_parser_params(params, sizeof(params), &parsed))
+    {
+        return -EINVAL;
+    }
 
-    copy_from_user(value , buf, len);
+    switch (parsed.type)
+    {
+    case HGD_LED:
+        /* code */
+        hgd_led_set_state(parsed.status);
+        return 1;
+    case HGD_BUTTON:
+        /* code */
 
-    // hgd_led_set_state(true);
-    // hgd_sys_info_set_led(true);
-    pr_info("Write function %s", value);
+        return 1;
+    case HGD_LCD:
+        /* code */
 
-    return len;
+        return strlen(parsed.buff);
+    case HGD_RELAY_1:
+        /* code */
+
+        return 1;
+    case HGD_RELAY_2:
+        /* code */
+
+        return 1;
+    case HGD_RELAY_3:
+        /* code */
+
+        return 1;
+    case HGD_RELAY_4:
+        /* code */
+
+        return 1;
+    default:
+        return -EINVAL;
+    }
+
+    return -EINVAL;
 }
 
 /*
@@ -181,8 +234,8 @@ int __init hgd_driver_init(void)
 
 r_pin_config:
     hgd_pin_config_free();
-r_sys_info:
-    hgd_sys_info_free();
+// r_sys_info:
+//     hgd_sys_info_free();
 r_device:
     device_destroy(hgd_class, hgd_dev);
 r_class:
