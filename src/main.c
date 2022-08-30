@@ -49,8 +49,7 @@ static dev_t hgd_dev = 0;
 static struct class *hgd_class;
 static struct cdev hgd_cdev;
 static struct cdev hgd_cdev;
-
-// static atomic_t device_busy = ATOMIC_INIT(0);;
+static atomic_t device_busy = ATOMIC_INIT(0);
 
 // static decl
 static int __init hgd_driver_init(void);
@@ -77,15 +76,15 @@ static struct file_operations fops =
 */
 int hgd_open(struct inode *inode, struct file *file)
 {
-    pr_info("Device File Opened...\n");
+    if(atomic_read(&device_busy) > 0)
+    {
+        pr_err("device busy");
+        return -EBUSY;
+    }
 
-    // if(atomic_read(&device_busy) > 0)
-    // {
-    //     pr_err("device busy");
-    //     return -EBUSY;
-    // }
+    atomic_inc(&device_busy);
 
-    // atomic_inc(&device_busy);
+    pr_info("Device open:%u\n", atomic_read(&device_busy));
     return 0;
 }
 
@@ -94,8 +93,9 @@ int hgd_open(struct inode *inode, struct file *file)
 */
 int hgd_release(struct inode *inode, struct file *file)
 {
-    pr_info("Device File Closed...\n");
-    // atomic_dec(&device_busy);
+    atomic_sub(1, &device_busy);
+
+    pr_info("Device release:%u\n", atomic_read(&device_busy));
     return 0;
 }
 
@@ -107,7 +107,7 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
     char msg[READ_BUF_LEN];
     memset(msg, '\0', READ_BUF_LEN);
 
-    sprintf(msg, "HGD_LED:\t\t%u\n" \
+    sprintf(msg, "\nHGD_LED:\t\t\t%u\n" \
      "HGD_BUTTON:\t\t%u\n" \
      "HGD_LCD:\t\t\t%u\n" \
      "HGD_RELAY_1:\t\t%u\n" \
@@ -156,6 +156,8 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
         kfree(params);
         return -EINVAL;
     }
+    
+    kfree(params);
 
     switch (parsed.type)
     {
@@ -175,12 +177,8 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
         pr_info("HGD_RELAY_%u: %u\n", parsed.type, parsed.status);
         hgd_relay_set_state(parsed.type, parsed.status);
         return len;
-    default:
-        kfree(params);
-        return -EINVAL;
     }
 
-    kfree(params);
     return -EINVAL;
 }
 
