@@ -21,10 +21,10 @@
 #define _HDG_LOG_
 #include "constants.h"
 
-#ifdef pr_fmt
-#undef pr_fmt
-#define pr_fmt(fmt) HGD_NAME ": " fmt
-#endif
+// #ifdef pr_fmt
+// #undef pr_fmt
+// #define pr_fmt(fmt) HGD_NAME ": " fmt
+// #endif
 
 
 #endif

@@ -50,6 +50,6 @@ typedef struct
  * @return true successful
  * @return false fail
  */
-bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser);
+bool hgd_parser_params(const char* buf, size_t len, hgd_parser_t* parser);
 
 #endif

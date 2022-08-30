@@ -19,22 +19,23 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/string.h>
 
 
 #define HGD_STD_FILL_PARSER(_const) \
         parser->type = _const; \
-        long status = kstrtol (args[1], 0, NULL); \
-        if(status == -ERANGE || status == -EINVAL ) \
+        long status; \
+        long ret = kstrtol (args[1], 10, &status); \
+        if(ret == -ERANGE || ret == -EINVAL ) \
         { \
             return false; \
         } \
         parser->status = status; \
-        return true;
+        return true; 
 
-bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
+bool hgd_parser_params(const char* buf, size_t len, hgd_parser_t* parser)
 {
-    pr_info(">%.*s<", len, buf);
-    if (!parser)
+    if (!parser || !buf)
     {
         return false;
     }
@@ -96,6 +97,8 @@ bool hgd_parser_params(const char *buf, size_t len, hgd_parser_t *parser)
         
     }
 
+    
+    pr_info("---1 >%s< >%s<", args[0], args[1]);
     if(strncmp(args[0], HGD_TO_STR(HGD_LED), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_LED)

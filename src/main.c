@@ -135,6 +135,7 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     if (params == NULL) {
         return -ENOMEM;
     }
+    memset(params, '\0', len);
     if(len > HDG_PARSER_BUF_MAX)
     {
         kfree(params);
@@ -149,7 +150,6 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     hgd_parser_t parsed;
     if (!hgd_parser_params(params, len, &parsed))
     {
-        pr_info("--1.3");
         kfree(params);
         return -EINVAL;
     }
@@ -191,7 +191,6 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     }
 
     kfree(params);
-pr_info("--6");
     return -EINVAL;
 }
 
