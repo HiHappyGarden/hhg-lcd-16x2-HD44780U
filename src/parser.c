@@ -46,7 +46,7 @@ bool hgd_parser_params(const char* buf, size_t len, hgd_parser_t* parser)
         [0] = {0},
         [1] = {0},
     };
-    
+
     __u8 no_buffer_overflow = 0;
     bool check = true;
     char* args0_ptr = args[0];
