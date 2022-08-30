@@ -130,7 +130,7 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 */
 ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
-
+    len--;
     char* params = (char*)kmalloc(len, GFP_KERNEL);
     if (params == NULL) {
         return -ENOMEM;
@@ -158,6 +158,7 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     {
     case HGD_LED:
         /* code */
+        pr_info("HGD_LED: %u\n", parsed.status);
         hgd_led_set_state(parsed.status);
         return 1;
     case HGD_BUTTON:
