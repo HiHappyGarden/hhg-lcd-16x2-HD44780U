@@ -25,10 +25,16 @@
 typedef unsigned char __u8;
 typedef void* hgd_ptr;
 
-typedef struct 
+typedef enum
 {
-    hgd_ptr first;
-    hgd_ptr second;
-}hgd_pair;
+    HGD_LED,
+    HGD_RELAY_1,
+    HGD_RELAY_2,
+    HGD_RELAY_3,
+    HGD_RELAY_4,
+    HGD_BUTTON,
+    HGD_LCD,
+} hgd_type_t;
+
 
 #endif

@@ -23,7 +23,7 @@
 /// IN | Button pin
 #define HGD_BUTTON_GPIO      (3) 
 
-/// IN | Button pin
+/// OUT | Led pin
 #define HGD_LED_GPIO         (24)
 
 /// OUT | Releay port 1

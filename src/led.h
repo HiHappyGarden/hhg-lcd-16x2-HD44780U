@@ -22,6 +22,12 @@
 #include <linux/init.h>
 
 /**
+ * @brief Init led to off
+ * 
+ */
+void hgd_led_init(void);
+
+/**
  * @brief Turn on/off led
  * 
  * @param set true = on

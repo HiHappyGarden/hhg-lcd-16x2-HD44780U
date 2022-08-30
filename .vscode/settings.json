@@ -8,6 +8,7 @@
         "types.h": "c",
         "posix_types.h": "c",
         "pin_config.h": "c",
-        "init.h": "c"
+        "init.h": "c",
+        "relay.h": "c"
     }
 }

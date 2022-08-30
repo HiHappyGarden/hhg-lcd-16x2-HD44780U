@@ -17,13 +17,17 @@
 
 
 #include "error.h"
-#include "log.h"
+#include "constants.h"
 
 #include <linux/kernel.h>
 #include <linux/vmalloc.h>
 #include <linux/string.h>
 #include <linux/stddef.h>
 
+#ifdef pr_fmt
+#undef pr_fmt
+#define pr_fmt(fmt) HGD_NAME ": " fmt
+#endif
 
 
 static hgd_error_t *last_error = NULL;

@@ -23,20 +23,9 @@
 
 #define HDG_PARSER_BUF_MAX (48)
 
-typedef enum
-{
-    HGD_LED = 1,
-    HGD_BUTTON,
-    HGD_LCD,
-    HGD_RELAY_1,
-    HGD_RELAY_2,
-    HGD_RELAY_3,
-    HGD_RELAY_4,
-} hgd_parser_type_t;
-
 typedef struct
 {
-    hgd_parser_type_t type;
+    hgd_type_t type;
     char buff[HDG_PARSER_BUF_MAX];
     __u8 status;
 } hgd_parser_t;

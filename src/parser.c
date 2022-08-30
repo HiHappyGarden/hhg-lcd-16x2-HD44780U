@@ -97,8 +97,6 @@ bool hgd_parser_params(const char* buf, size_t len, hgd_parser_t* parser)
         
     }
 
-    
-    pr_info("---1 >%s< >%s<", args[0], args[1]);
     if(strncmp(args[0], HGD_TO_STR(HGD_LED), HDG_PARSER_BUF_MAX) == 0)
     {
         HGD_STD_FILL_PARSER(HGD_LED)

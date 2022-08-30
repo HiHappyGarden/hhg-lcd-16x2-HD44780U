@@ -20,12 +20,36 @@
 #ifndef _HDG_RELAY_
 #define _HDG_RELAY_
 
-typedef enum hgd_relay_type
-{
-    HGD_RELEAY_1 = 1,
-    HGD_RELEAY_2 = 2,
-    HGD_RELEAY_3 = 3,
-    HGD_RELEAY_4 = 4
-}hgd_relay_t;
+#include "constants.h"
+
+#include <linux/init.h>
+
+/**
+ * @brief Set all port to off
+ */
+void hgd_relay_init(void);
+
+/**
+ * @brief Turn on/off relay
+ * @param relay id
+ * @param set true = on
+ * @param set false = off
+ */
+void hgd_relay_set_state(hgd_type_t relay, bool set);
+
+/**
+ * @brief Togle relay
+ * 
+ */
+void hgd_relay_toggle(hgd_type_t relay);
+
+/**
+ * @brief Get actual relay status
+ * 
+ * @return true Turn on
+ * @return false Turn off
+ */
+bool hgd_relay_get_state(hgd_type_t relay);
+
 
 #endif

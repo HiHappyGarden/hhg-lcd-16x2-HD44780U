@@ -19,6 +19,12 @@
 #include "led.h"
 #include "pin_config.h"
 
+
+void hgd_led_init(void)
+{
+    hgd_led_set_state(false);
+}
+
 void hgd_led_set_state(bool state)
 {
     if(hgd_led_get_state() != state)

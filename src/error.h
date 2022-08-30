@@ -20,7 +20,7 @@
 #ifndef _HDG_ERROR_
 #define _HDG_ERROR_
 
-#include <linux/init.h>
+#include <linux/kernel.h>
 
 #define MSG_LEN_ERROR_HGD (30)
 

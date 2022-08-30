@@ -56,7 +56,7 @@ bool hgd_pin_config_init(hgd_error_t** error)
     gpio_direction_output(HGD_BUTTON_GPIO, 1);
     gpio_direction_output(HGD_LED_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN1_GPIO, 0);
-    // gpio_direction_output(HGD_RELEAY_IN2_GPIO, 0);
+    gpio_direction_output(HGD_RELEAY_IN2_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN3_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN4_GPIO, 0);
     gpio_direction_output(HGD_LCD_RS_GPIO, 0);
@@ -68,18 +68,18 @@ bool hgd_pin_config_init(hgd_error_t** error)
     gpio_direction_output(HGD_LCD_D7_GPIO, 0);
 
 
-    // /* Using this call the GPIO 21 will be visible in /sys/class/gpio/
-    //  ** Now you can change the gpio values by using below commands also.
-    //  ** echo 1 > /sys/class/gpio/gpio21/value  (turn ON the LED)
-    //  ** echo 0 > /sys/class/gpio/gpio21/value  (turn OFF the LED)
-    //  ** cat /sys/class/gpio/gpio21/value  (read the value LED)
-    //  **
-    //  ** the second argument prevents the direction from being changed.
-    //  */
+    /* Using this call the GPIO 21 will be visible in /sys/class/gpio/
+     ** Now you can change the gpio values by using below commands also.
+     ** echo 1 > /sys/class/gpio/gpio21/value  (turn ON the LED)
+     ** echo 0 > /sys/class/gpio/gpio21/value  (turn OFF the LED)
+     ** cat /sys/class/gpio/gpio21/value  (read the value LED)
+     **
+     ** the second argument prevents the direction from being changed.
+     */
     gpio_export(HGD_BUTTON_GPIO, false);
     gpio_export(HGD_LED_GPIO, false);
     gpio_export(HGD_RELEAY_IN1_GPIO, false);
-    // gpio_export(HGD_RELEAY_IN2_GPIO, false);
+    gpio_export(HGD_RELEAY_IN2_GPIO, false);
     gpio_export(HGD_RELEAY_IN3_GPIO, false);
     gpio_export(HGD_RELEAY_IN4_GPIO, false);
     gpio_export(HGD_LCD_RS_GPIO, false);
@@ -102,7 +102,7 @@ void hgd_pin_config_unexport(void)
     gpio_unexport(HGD_BUTTON_GPIO);
     gpio_unexport(HGD_LED_GPIO);
     gpio_unexport(HGD_RELEAY_IN1_GPIO);
-    // gpio_unexport(HGD_RELEAY_IN2_GPIO);
+    gpio_unexport(HGD_RELEAY_IN2_GPIO);
     gpio_unexport(HGD_RELEAY_IN3_GPIO);
     gpio_unexport(HGD_RELEAY_IN4_GPIO);
     gpio_unexport(HGD_LCD_RS_GPIO);
@@ -119,7 +119,7 @@ void hgd_pin_config_free(void)
     gpio_free(HGD_BUTTON_GPIO);
     gpio_free(HGD_LED_GPIO);
     gpio_free(HGD_RELEAY_IN1_GPIO);
-    // gpio_free(HGD_RELEAY_IN2_GPIO);
+    gpio_free(HGD_RELEAY_IN2_GPIO);
     gpio_free(HGD_RELEAY_IN3_GPIO);
     gpio_free(HGD_RELEAY_IN4_GPIO);
     gpio_free(HGD_LCD_RS_GPIO);
@@ -137,7 +137,7 @@ bool hgd_pin_config_is_valid(hgd_error_t** error)
     HGD_IS_VALID(HGD_BUTTON_GPIO, "HGD_BUTTON_GPIO")
     HGD_IS_VALID(HGD_LED_GPIO, "HGD_LED_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN1_GPIO, "HGD_RELEAY_IN1_GPIO")
-    // HGD_IS_VALID(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
+    HGD_IS_VALID(HGD_RELEAY_IN2_GPIO, "HGD_RELEAY_IN2_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN3_GPIO, "HGD_RELEAY_IN3_GPIO")
     HGD_IS_VALID(HGD_RELEAY_IN4_GPIO, "HGD_RELEAY_IN4_GPIO")
     HGD_IS_VALID(HGD_LCD_RS_GPIO, "HGD_LCD_RS_GPIO")

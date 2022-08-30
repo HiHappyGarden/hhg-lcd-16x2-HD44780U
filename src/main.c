@@ -16,7 +16,6 @@
  */
 
 #include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kdev_t.h>
 #include <linux/fs.h>
@@ -27,11 +26,15 @@
 
 #include "constants.h"
 #include "error.h"
-#include "log.h"
 #include "parser.h"
 #include "pin_config.h"
-#include "sys_info.h"
 #include "led.h"
+#include "relay.h"
+
+#ifdef pr_fmt
+#undef pr_fmt
+#define pr_fmt(fmt) HGD_NAME ": " fmt
+#endif
 
 #define READ_BUF_LEN (256) 
 #define NOT_DEF (3) 
@@ -114,10 +117,10 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
      , hgd_led_get_state()
      , NOT_DEF
      , NOT_DEF
-     , NOT_DEF
-     , NOT_DEF
-     , NOT_DEF
-     , NOT_DEF
+     , hgd_relay_get_state(HGD_RELAY_1)
+     , hgd_relay_get_state(HGD_RELAY_2)
+     , hgd_relay_get_state(HGD_RELAY_3)
+     , hgd_relay_get_state(HGD_RELAY_4)
      );
     
     pr_info("%s", msg);
@@ -157,36 +160,22 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     switch (parsed.type)
     {
     case HGD_LED:
-        /* code */
+        
         pr_info("HGD_LED: %u\n", parsed.status);
         hgd_led_set_state(parsed.status);
-        return 1;
+        return len;
     case HGD_BUTTON:
-        /* code */
-
-        return 1;
+        return len;
     case HGD_LCD:
-        /* code */
-
         return strlen(parsed.buff);
     case HGD_RELAY_1:
-        /* code */
-
-        return 1;
     case HGD_RELAY_2:
-        /* code */
-
-        return 1;
     case HGD_RELAY_3:
-        /* code */
-
-        return 1;
     case HGD_RELAY_4:
-        /* code */
-
-        return 1;
+        pr_info("HGD_RELAY_%u: %u\n", parsed.type, parsed.status);
+        hgd_relay_set_state(parsed.type, parsed.status);
+        return len;
     default:
-        pr_info("--1.5");
         kfree(params);
         return -EINVAL;
     }
@@ -235,26 +224,20 @@ int __init hgd_driver_init(void)
 
     // load pin config
     hgd_error_t *error = NULL;
-
-    // if(!hgd_sys_info_init(&error))
-    // {
-    //     hgd_error_print(error, "Cannot init sysfs", true);
-    //     goto r_sys_info;
-    // }
-
     if (!hgd_pin_config_init(&error))
     {
         hgd_error_print(error, "Cannot init gpio config", true);
         goto r_pin_config;
     }
 
+    hgd_led_init();
+    hgd_relay_init();
+
     pr_info("Happy GarderPI driver insert...Done\n");
     return 0;
 
 r_pin_config:
     hgd_pin_config_free();
-// r_sys_info:
-//     hgd_sys_info_free();
 r_device:
     device_destroy(hgd_class, hgd_dev);
 r_class:
@@ -274,8 +257,6 @@ static void __exit hgd_driver_exit(void)
 {
     hgd_pin_config_unexport();
     hgd_pin_config_free();
-
-    hgd_sys_info_free();
 
     device_destroy(hgd_class, hgd_dev);
     class_destroy(hgd_class);
