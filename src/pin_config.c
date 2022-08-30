@@ -38,20 +38,17 @@ static bool hgd_pin_config_request(hgd_error_t** error);
 
 bool hgd_pin_config_init(hgd_error_t** error)
 {
-
-    pr_info("Checking the GPIOs are valid or not!");
     if (hgd_pin_config_is_valid(error) == false)
     {
         goto r_gpio;
     }
-    pr_info("GPIOs valid!");
+    
 
-    pr_info("Requesting the GPIO configuration");
     if (hgd_pin_config_request(error) == false)
     {
         goto r_gpio;
     }
-    pr_info("GPIOs configuration valid!");
+    pr_info("GPIOs configuration it's valid!");
 
     gpio_direction_output(HGD_BUTTON_GPIO, 1);
     gpio_direction_output(HGD_LED_GPIO, 0);
