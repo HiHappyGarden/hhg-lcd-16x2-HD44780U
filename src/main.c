@@ -56,15 +56,16 @@ static int hgd_release(struct inode *inode, struct file *file);
 static ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off);
 static ssize_t hgd_write(struct file *filp, const char *buf, size_t len, loff_t *off);
 
+static int hgd_uevent(struct device *dev, struct kobj_uevent_env *env);
+
 // File operation structure
 static struct file_operations fops =
-{
+    {
         .owner = THIS_MODULE,
         .read = hgd_read,
         .write = hgd_write,
         .open = hgd_open,
-        .release = hgd_release
-};
+        .release = hgd_release};
 
 /*
 ** This function will be called when we open the Device file
@@ -102,18 +103,33 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
     char msg[READ_BUF_LEN];
     memset(msg, '\0', READ_BUF_LEN);
 
-    sprintf(msg, "\nHGD_LED:\t\t\t%u\n"
-                 "HGD_BUTTON:\t\t%u\n"
-                 "HGD_LCD:\t\t\t%u\n"
-                 "HGD_RELAY_1:\t\t%u\n"
-                 "HGD_RELAY_2:\t\t%u\n"
-                 "HGD_RELAY_3:\t\t%u\n"
-                 "HGD_RELAY_4:\t\t%u\n",
-            hgd_led_get_state(), NOT_DEF, NOT_DEF, hgd_relay_get_state(HGD_RELAY_1), hgd_relay_get_state(HGD_RELAY_2), hgd_relay_get_state(HGD_RELAY_3), hgd_relay_get_state(HGD_RELAY_4));
+    __u32 msg_len = sprintf(msg, "\nHGD_LED:\t%u\n"
+                 "HGD_BUTTON:\t%u\n"
+                 "HGD_LCD:\t%u\n"
+                 "HGD_RELAY_1:\t%u\n"
+                 "HGD_RELAY_2:\t%u\n"
+                 "HGD_RELAY_3:\t%u\n"
+                 "HGD_RELAY_4:\t%u",
+            hgd_led_get_state(),
+            NOT_DEF, NOT_DEF,
+            hgd_relay_get_state(HGD_RELAY_1),
+            hgd_relay_get_state(HGD_RELAY_2),
+            hgd_relay_get_state(HGD_RELAY_3),
+            hgd_relay_get_state(HGD_RELAY_4));
 
-    pr_info("%s", msg);
+    pr_info("len: %d %lld %s", len, *off, msg);
 
-    return copy_to_user(buf, msg, strlen(msg));
+    if (len > msg_len)
+    {
+        len = msg_len;
+    }
+
+    if (copy_to_user(buf, msg, len)) 
+    {
+        return -EFAULT;
+    }
+
+    return (*off);
 }
 
 /*
@@ -170,6 +186,15 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     return -EINVAL;
 }
 
+/**
+ * @brief Change access permission in user space
+ */
+int hgd_uevent(struct device *dev, struct kobj_uevent_env *env)
+{
+    add_uevent_var(env, "DEVMODE=%#o", 0666);
+    return 0;
+}
+
 /*
 ** Module Init function
 */
@@ -200,6 +225,7 @@ int __init hgd_driver_init(void)
         pr_err("Cannot create the struct class\n");
         goto r_class;
     }
+    hgd_class->dev_uevent = hgd_uevent;
 
     /*Creating device*/
     if ((device_create(hgd_class, NULL, hgd_dev, NULL, HGD_NAME)) == NULL)
