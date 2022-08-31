@@ -36,13 +36,8 @@
 #define pr_fmt(fmt) HGD_NAME ": " fmt
 #endif
 
-#define READ_BUF_LEN (256) 
-#define NOT_DEF (3) 
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
-MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
-MODULE_INFO(intree, "Y");
+#define READ_BUF_LEN (256)
+#define NOT_DEF (3)
 
 // data
 static dev_t hgd_dev = 0;
@@ -63,12 +58,12 @@ static ssize_t hgd_write(struct file *filp, const char *buf, size_t len, loff_t 
 
 // File operation structure
 static struct file_operations fops =
-    {
+{
         .owner = THIS_MODULE,
         .read = hgd_read,
         .write = hgd_write,
         .open = hgd_open,
-        .release = hgd_release,
+        .release = hgd_release
 };
 
 /*
@@ -76,7 +71,7 @@ static struct file_operations fops =
 */
 int hgd_open(struct inode *inode, struct file *file)
 {
-    if(atomic_read(&device_busy) > 0)
+    if (atomic_read(&device_busy) > 0)
     {
         pr_err("device busy");
         return -EBUSY;
@@ -103,29 +98,22 @@ int hgd_release(struct inode *inode, struct file *file)
 ** This function will be called when we read the Device file
 */
 ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
-{ 
+{
     char msg[READ_BUF_LEN];
     memset(msg, '\0', READ_BUF_LEN);
 
-    sprintf(msg, "\nHGD_LED:\t\t\t%u\n" \
-     "HGD_BUTTON:\t\t%u\n" \
-     "HGD_LCD:\t\t\t%u\n" \
-     "HGD_RELAY_1:\t\t%u\n" \
-     "HGD_RELAY_2:\t\t%u\n" \
-     "HGD_RELAY_3:\t\t%u\n" \
-     "HGD_RELAY_4:\t\t%u\n" 
-     , hgd_led_get_state()
-     , NOT_DEF
-     , NOT_DEF
-     , hgd_relay_get_state(HGD_RELAY_1)
-     , hgd_relay_get_state(HGD_RELAY_2)
-     , hgd_relay_get_state(HGD_RELAY_3)
-     , hgd_relay_get_state(HGD_RELAY_4)
-     );
-    
+    sprintf(msg, "\nHGD_LED:\t\t\t%u\n"
+                 "HGD_BUTTON:\t\t%u\n"
+                 "HGD_LCD:\t\t\t%u\n"
+                 "HGD_RELAY_1:\t\t%u\n"
+                 "HGD_RELAY_2:\t\t%u\n"
+                 "HGD_RELAY_3:\t\t%u\n"
+                 "HGD_RELAY_4:\t\t%u\n",
+            hgd_led_get_state(), NOT_DEF, NOT_DEF, hgd_relay_get_state(HGD_RELAY_1), hgd_relay_get_state(HGD_RELAY_2), hgd_relay_get_state(HGD_RELAY_3), hgd_relay_get_state(HGD_RELAY_4));
+
     pr_info("%s", msg);
 
-    return copy_to_user( buf, msg, strlen(msg));
+    return copy_to_user(buf, msg, strlen(msg));
 }
 
 /*
@@ -134,35 +122,35 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
     len--;
-    char* params = (char*)kmalloc(len, GFP_KERNEL);
-    if (params == NULL) {
+    if (len > HDG_PARSER_BUF_MAX)
+    {
+        return -EINVAL;
+    }
+
+    char *params = (char *)kmalloc(len, GFP_KERNEL);
+    if (params == NULL)
+    {
         return -ENOMEM;
     }
     memset(params, '\0', len);
-    if(len > HDG_PARSER_BUF_MAX)
+
+    if (copy_from_user(params, buf, len) != 0)
     {
         kfree(params);
         return -EINVAL;
     }
-    if(copy_from_user(params, buf, len) != 0)
-    {
-        kfree(params);
-        return -EINVAL;
-    }
+
+    kfree(params);
 
     hgd_parser_t parsed;
     if (!hgd_parser_params(params, len, &parsed))
     {
-        kfree(params);
-        return -EINVAL;
+        return 1;
     }
-    
-    kfree(params);
 
     switch (parsed.type)
     {
     case HGD_LED:
-        
         pr_info("HGD_LED: %u\n", parsed.status);
         hgd_led_set_state(parsed.status);
         return len;
@@ -265,3 +253,8 @@ static void __exit hgd_driver_exit(void)
 
 module_init(hgd_driver_init);
 module_exit(hgd_driver_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
+MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
+MODULE_INFO(intree, "Y");
