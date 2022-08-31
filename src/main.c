@@ -103,13 +103,13 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
     char msg[READ_BUF_LEN];
     memset(msg, '\0', READ_BUF_LEN);
 
-    __u32 msg_len = sprintf(msg, "\nHGD_LED:\t%u\n"
+    __u32 msg_len = sprintf(msg, "HGD_LED:\t%u\n"
                  "HGD_BUTTON:\t%u\n"
                  "HGD_LCD:\t%u\n"
                  "HGD_RELAY_1:\t%u\n"
                  "HGD_RELAY_2:\t%u\n"
                  "HGD_RELAY_3:\t%u\n"
-                 "HGD_RELAY_4:\t%u",
+                 "HGD_RELAY_4:\t%u\n",
             hgd_led_get_state(),
             NOT_DEF, NOT_DEF,
             hgd_relay_get_state(HGD_RELAY_1),
@@ -124,12 +124,7 @@ ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
         len = msg_len;
     }
 
-    if (copy_to_user(buf, msg, len)) 
-    {
-        return -EFAULT;
-    }
-
-    return (*off);
+    return simple_read_from_buffer(buf, len, off, msg, msg_len);
 }
 
 /*
