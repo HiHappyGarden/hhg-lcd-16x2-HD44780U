@@ -21,24 +21,24 @@
 
 #include <linux/init.h>
 
-#define HDG_PARSER_BUF_MAX (48)
+#define HDG_PARSER_BUFF_MAX (48)
 
 typedef struct
 {
     hgd_type_t type;
-    char buff[HDG_PARSER_BUF_MAX];
+    char buff[HDG_PARSER_BUFF_MAX];
     __u8 status;
 } hgd_parser_t;
 
 /**
  * @brief Parse write section
  *
- * @param buf data buffer from user
+ * @param buff data buffer from user
  * @param len buffer
  * @param[out] parser data parsed (already alloced)
  * @return true successful
  * @return false fail
  */
-bool hgd_parser_params(const char* buf, size_t len, hgd_parser_t* parser);
+bool hgd_parser_params(const char* buff, size_t len, hgd_parser_t* parser);
 
 #endif

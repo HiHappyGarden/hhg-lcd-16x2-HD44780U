@@ -36,7 +36,7 @@
 #define pr_fmt(fmt) HGD_NAME ": " fmt
 #endif
 
-#define READ_BUF_LEN (256)
+#define READ_BUFF_LEN (256)
 #define NOT_DEF (3)
 
 // data
@@ -53,8 +53,8 @@ static void __exit hgd_driver_exit(void);
 // static decl
 static int hgd_open(struct inode *inode, struct file *file);
 static int hgd_release(struct inode *inode, struct file *file);
-static ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off);
-static ssize_t hgd_write(struct file *filp, const char *buf, size_t len, loff_t *off);
+static ssize_t hgd_read(struct file *filp, char __user *buff, size_t len, loff_t *off);
+static ssize_t hgd_write(struct file *filp, const char *buff, size_t len, loff_t *off);
 
 static int hgd_uevent(struct device *dev, struct kobj_uevent_env *env);
 
@@ -98,42 +98,43 @@ int hgd_release(struct inode *inode, struct file *file)
 /*
 ** This function will be called when we read the Device file
 */
-ssize_t hgd_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
+ssize_t hgd_read(struct file *filp, char __user *buff, size_t count, loff_t *off)
 {
-    char msg[READ_BUF_LEN];
-    memset(msg, '\0', READ_BUF_LEN);
+    char msg[READ_BUFF_LEN];
+    memset(msg, '\0', READ_BUFF_LEN);
 
-    __u32 msg_len = sprintf(msg, "HGD_LED:\t%u\n"
-                 "HGD_BUTTON:\t%u\n"
-                 "HGD_LCD:\t%u\n"
-                 "HGD_RELAY_1:\t%u\n"
-                 "HGD_RELAY_2:\t%u\n"
-                 "HGD_RELAY_3:\t%u\n"
-                 "HGD_RELAY_4:\t%u\n",
-            hgd_led_get_state(),
-            NOT_DEF, NOT_DEF,
-            hgd_relay_get_state(HGD_RELAY_1),
-            hgd_relay_get_state(HGD_RELAY_2),
-            hgd_relay_get_state(HGD_RELAY_3),
-            hgd_relay_get_state(HGD_RELAY_4));
+    __u32 msg_len = sprintf(msg,
+                            "HGD_LED:\t%u\n"
+                            "HGD_BUTTON:\t%u\n"
+                            "HGD_LCD:\t%u\n"
+                            "HGD_RELAY_1:\t%u\n"
+                            "HGD_RELAY_2:\t%u\n"
+                            "HGD_RELAY_3:\t%u\n"
+                            "HGD_RELAY_4:\t%u\n",
+                            hgd_led_get_state(),
+                            NOT_DEF, NOT_DEF,
+                            hgd_relay_get_state(HGD_RELAY_1),
+                            hgd_relay_get_state(HGD_RELAY_2),
+                            hgd_relay_get_state(HGD_RELAY_3),
+                            hgd_relay_get_state(HGD_RELAY_4));
 
-    pr_info("len: %d %lld %s", len, *off, msg);
+    pr_info("%s", msg);
 
-    if (len > msg_len)
+    if (count > msg_len)
     {
-        len = msg_len;
+        count = msg_len;
     }
 
-    return simple_read_from_buffer(buf, len, off, msg, msg_len);
+    return simple_read_from_buffer(buff, count, off, msg, msg_len);
 }
 
 /*
 ** This function will be called when we write the Device file
 */
-ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
+ssize_t hgd_write(struct file *filp, const char __user *buff, size_t len, loff_t *off)
 {
     len--;
-    if (len > HDG_PARSER_BUF_MAX)
+    if (len > HDG_PARSER_BUFF_MAX)
     {
         return -EINVAL;
     }
@@ -145,7 +146,7 @@ ssize_t hgd_write(struct file *filp, const char __user *buf, size_t len, loff_t 
     }
     memset(params, '\0', len);
 
-    if (copy_from_user(params, buf, len) != 0)
+    if (copy_from_user(params, buff, len) != 0)
     {
         kfree(params);
         return -EINVAL;
