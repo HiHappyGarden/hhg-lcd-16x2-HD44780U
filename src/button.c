@@ -43,9 +43,10 @@
 #define pr_fmt(fmt) HGD_NAME ": " fmt
 #endif
 
+#define DIFF_JIFFIES 50
 
 extern unsigned long volatile jiffies;
-unsigned long old_jiffie = 0;
+unsigned long old_jiffies = 0;
 
 
 
@@ -88,13 +89,13 @@ inline void hgd_button_free(void)
 irqreturn_t gpio_irq_handler(int irq, void *dev_id)
 {
   //avoid continuos click
-  unsigned long diff = jiffies - old_jiffie;
-  if (diff < 20)
+  unsigned long diff = jiffies - old_jiffies;
+  if (diff < DIFF_JIFFIES)
   {
     return IRQ_HANDLED;
   }
 
-  old_jiffie = jiffies;
+  old_jiffies = jiffies;
 
 
   pr_info("Interrupt(IRQ Handler) %lu \n", jiffies);
