@@ -17,8 +17,8 @@
 
 
 
-#ifndef _HDG_PIN_CONFIG_
-#define _HDG_PIN_CONFIG_
+#ifndef _HDG_GPIO_CONFIG_
+#define _HDG_GPIO_CONFIG_
 
 /// IN | Button pin
 #define HGD_BUTTON_GPIO      (3) 
@@ -71,18 +71,18 @@
  * @return 0 init correctly
  * @return true some error
  */
-bool hgd_pin_config_init(hgd_error_t** error);
+bool hgd_gpio_config_init(hgd_error_t** error);
 
 /**
  * @brief Free pin config
  * 
  */
-void hgd_pin_config_unexport(void);
+void hgd_gpio_config_unexport(void);
 
 /**
  * @brief Free pin config
  * 
  */
-void hgd_pin_config_free(void);
+void hgd_gpio_config_free(void);
 
 #endif

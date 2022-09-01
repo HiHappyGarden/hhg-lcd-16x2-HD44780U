@@ -5,12 +5,13 @@ happy_gardenpi_driver-objs := src/main.o \
 							src/button.o \
 							src/lcd.o \
 							src/relay.o \
-							src/pin_config.o \
+							src/gpio_config.o \
 							src/error.o \
 							src/led.o \
 							src/parser.o 
 
-ccflags-y := -std=gnu17 -Wno-declaration-after-statement
+ccflags-y := -std=gnu11 -Wno-declaration-after-statement
+EXTRA_CFLAGS:= -D TEST=2
 
 PWD := $(CURDIR)
  

@@ -41,7 +41,7 @@ void hgd_relay_set_state(hgd_type_t relay, bool set);
  * @brief Togle relay
  * 
  */
-void hgd_relay_toggle(hgd_type_t relay);
+void hgd_relay_toggle_state(hgd_type_t relay);
 
 /**
  * @brief Get actual relay status

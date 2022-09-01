@@ -17,7 +17,7 @@
 
 
 #include "relay.h"
-#include "pin_config.h"
+#include "gpio_config.h"
 
 static __u8 get_relay_gpio(hgd_type_t relay)
 {
@@ -55,7 +55,7 @@ void hgd_relay_set_state(hgd_type_t relay, bool state)
     }
 }
 
-inline void hgd_relay_toggle(hgd_type_t relay)
+inline void hgd_relay_toggle_state(hgd_type_t relay)
 {
     __u8 gpio = 0;
     if((gpio = get_relay_gpio(relay)) > 0)

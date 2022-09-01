@@ -19,6 +19,28 @@
 #ifndef _HDG_BUTTON_
 #define _HDG_BUTTON_
 
+#include "error.h"
 
+/**
+ * @brief Init button 
+ * 
+ * @param[out] error if pass NULL not return erro 
+ * @return true if ok
+ * @return false if error
+ */
+bool hgd_button_init(hgd_error_t **error);
+
+/**
+ * @brief Get actual button status
+ * 
+ * @return true Turn on
+ * @return false Turn off
+ */
+bool hgd_button_get_state(void);
+
+/**
+ * @brief Free button
+ */
+void hgd_button_free(void);
 
 #endif

@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pin_config.h"
+#include "gpio_config.h"
 
 #include <linux/init.h>
 
@@ -32,25 +32,36 @@
         return false; \
     }
 
-static bool hgd_pin_config_is_valid(hgd_error_t** error);
-static bool hgd_pin_config_request(hgd_error_t** error);
-static bool hgd_pin_config_request(hgd_error_t** error);
+static bool hgd_gpio_consig_is_valid(hgd_error_t** error);
+static bool hgd_gpio_config_request(hgd_error_t** error);
 
-bool hgd_pin_config_init(hgd_error_t** error)
+bool hgd_gpio_config_init(hgd_error_t** error)
 {
-    if (hgd_pin_config_is_valid(error) == false)
+    if (hgd_gpio_consig_is_valid(error) == false)
     {
         goto r_gpio;
     }
     
 
-    if (hgd_pin_config_request(error) == false)
+    if (hgd_gpio_config_request(error) == false)
     {
         goto r_gpio;
     }
     pr_info("GPIOs configuration it's valid!");
 
-    gpio_direction_output(HGD_BUTTON_GPIO, 1);
+    gpio_direction_input(HGD_BUTTON_GPIO);
+
+#ifdef EN_DEBOUNCE
+  //Debounce the button with a delay of 200ms
+  if(gpio_set_debounce(HGD_BUTTON_GPIO, 200) < 0)
+  {
+    char err[10];
+    sprintf(err, "%u", HGD_BUTTON_GPIO);
+    hgd_error_new(error, HGD_ERROR_GPIO_DEBOUNCE, "Imppossible init debouce"); 
+    return false;
+  }
+#endif
+
     gpio_direction_output(HGD_LED_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN1_GPIO, 0);
     gpio_direction_output(HGD_RELEAY_IN2_GPIO, 0);
@@ -89,12 +100,12 @@ bool hgd_pin_config_init(hgd_error_t** error)
     return true;
 
 r_gpio:
-    hgd_pin_config_free();
+    hgd_gpio_config_free();
     return false;
 }
 
 
-void hgd_pin_config_unexport(void)
+void hgd_gpio_config_unexport(void)
 {
     gpio_unexport(HGD_BUTTON_GPIO);
     gpio_unexport(HGD_LED_GPIO);
@@ -111,7 +122,7 @@ void hgd_pin_config_unexport(void)
     gpio_unexport(HGD_LCD_D7_GPIO);
 }
 
-void hgd_pin_config_free(void)
+void hgd_gpio_config_free(void)
 {
     gpio_free(HGD_BUTTON_GPIO);
     gpio_free(HGD_LED_GPIO);
@@ -128,7 +139,7 @@ void hgd_pin_config_free(void)
     gpio_free(HGD_LCD_D7_GPIO);
 }
 
-bool hgd_pin_config_is_valid(hgd_error_t** error)
+bool hgd_gpio_consig_is_valid(hgd_error_t** error)
 {
     // Checking the GPIO is valid or not
     HGD_IS_VALID(HGD_BUTTON_GPIO, "HGD_BUTTON_GPIO")
@@ -149,7 +160,7 @@ bool hgd_pin_config_is_valid(hgd_error_t** error)
     return true;
 }
 
-bool hgd_pin_config_request(hgd_error_t** error)
+bool hgd_gpio_config_request(hgd_error_t** error)
 {
     HGD_REQUEST(HGD_BUTTON_GPIO, "HGD_BUTTON_GPIO")
     HGD_REQUEST(HGD_LED_GPIO, "HGD_LED_GPIO")

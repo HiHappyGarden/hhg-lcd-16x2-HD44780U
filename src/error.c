@@ -40,6 +40,11 @@ bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
         last_error = NULL;
         return false;
     }
+    if(*error != NULL)
+    {
+        last_error = NULL;
+        return false;
+    }
     *error = vmalloc(sizeof(hgd_error_t));
     if(!*error)
     {

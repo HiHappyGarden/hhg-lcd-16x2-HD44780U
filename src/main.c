@@ -27,9 +27,10 @@
 #include "constants.h"
 #include "error.h"
 #include "parser.h"
-#include "pin_config.h"
+#include "gpio_config.h"
 #include "led.h"
 #include "relay.h"
+#include "button.h"
 
 #ifdef pr_fmt
 #undef pr_fmt
@@ -232,20 +233,27 @@ int __init hgd_driver_init(void)
 
     // load pin config
     hgd_error_t *error = NULL;
-    if (!hgd_pin_config_init(&error))
+    if (!hgd_gpio_config_init(&error))
     {
         hgd_error_print(error, "Cannot init gpio config", true);
-        goto r_pin_config;
+        goto r_gpio_config;
+    }
+
+    if (!hgd_button_init(&error))
+    {
+        hgd_error_print(error, "Cannot init button", true);
+        goto r_gpio_config;
     }
 
     hgd_led_init();
     hgd_relay_init();
 
+
     pr_info("Happy GarderPI driver insert...Done\n");
     return 0;
 
-r_pin_config:
-    hgd_pin_config_free();
+r_gpio_config:
+    hgd_gpio_config_free();
 r_device:
     device_destroy(hgd_class, hgd_dev);
 r_class:
@@ -263,8 +271,10 @@ r_unreg:
 */
 static void __exit hgd_driver_exit(void)
 {
-    hgd_pin_config_unexport();
-    hgd_pin_config_free();
+    hgd_button_free();
+
+    hgd_gpio_config_unexport();
+    hgd_gpio_config_free();
 
     device_destroy(hgd_class, hgd_dev);
     class_destroy(hgd_class);

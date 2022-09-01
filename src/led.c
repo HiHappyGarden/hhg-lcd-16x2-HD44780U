@@ -17,7 +17,7 @@
 
 
 #include "led.h"
-#include "pin_config.h"
+#include "gpio_config.h"
 
 
 void hgd_led_init(void)
@@ -33,7 +33,7 @@ void hgd_led_set_state(bool state)
     }
 }
 
-inline void hgd_led_toggle(void)
+inline void hgd_led_toggle_state(void)
 {
     hgd_led_set_state(!gpio_get_value(HGD_LED_GPIO));
 }

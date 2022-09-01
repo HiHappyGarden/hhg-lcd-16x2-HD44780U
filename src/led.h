@@ -39,7 +39,7 @@ void hgd_led_set_state(bool set);
  * @brief Togle led
  * 
  */
-void hgd_led_toggle(void);
+void hgd_led_toggle_state(void);
 
 /**
  * @brief Get actula led status
