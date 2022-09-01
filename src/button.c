@@ -36,16 +36,21 @@
 #include "constants.h"
 #include "gpio_config.h"
 
-// #ifdef EN_DEBOUNCE
 #include <linux/jiffies.h>
+
+#ifdef pr_fmt
+#undef pr_fmt
+#define pr_fmt(fmt) HGD_NAME ": " fmt
+#endif
+
+
 extern unsigned long volatile jiffies;
 unsigned long old_jiffie = 0;
-// #endif
 
-extern unsigned long volatile jiffies;
+
 
 static __u32 gpio_irq_number;
-static static atomic_t thread_busy = ATOMIC_INIT(0);
+static atomic_t thread_busy = ATOMIC_INIT(0);
 
 static irqreturn_t gpio_irq_handler(int irq, void *dev_id);
 static irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id);
@@ -94,6 +99,15 @@ irqreturn_t gpio_irq_handler(int irq, void *dev_id)
 
   pr_info("Interrupt(IRQ Handler) %lu \n", jiffies);
 
+
+  if (atomic_read(&thread_busy) > 0)
+  {
+      pr_info("Thread busy\n");
+      return IRQ_HANDLED;
+  }
+
+  atomic_inc(&thread_busy);
+
   /*
   ** If you don't want to call the thread fun, then you can just return
   ** IRQ_HANDLED. If you return IRQ_WAKE_THREAD, then thread fun will be called.
@@ -103,18 +117,12 @@ irqreturn_t gpio_irq_handler(int irq, void *dev_id)
 
 irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id) 
 {
-  if (atomic_read(&thread_busy) > 0)
-  {
-      return IRQ_HANDLED;
-  }
 
-  atomic_inc(&thread_busy);
-
-  __u32  i = 2000;
+  __u32  i = 100;
   while (true && i)
   {
     pr_info("Interrupt(Threaded Handler) : irq: %d HGD_BUTTON_GPIO : %d ", irq, hgd_button_get_state());
-    mdelay(100);
+    mdelay(5);
     i--;
   }
   
