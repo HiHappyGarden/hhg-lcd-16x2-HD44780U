@@ -10,6 +10,8 @@
         "pin_config.h": "c",
         "init.h": "c",
         "relay.h": "c",
-        "gpio_config.h": "c"
+        "gpio_config.h": "c",
+        "gpio.h": "c",
+        "ioctl.h": "c"
     }
 }

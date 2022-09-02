@@ -66,6 +66,7 @@ static struct file_operations fops =
         .read = hgd_read,
         .write = hgd_write,
         .open = hgd_open,
+        .unlocked_ioctl = hgd_button_ioctl,
         .release = hgd_release};
 
 /*
@@ -90,6 +91,9 @@ int hgd_open(struct inode *inode, struct file *file)
 */
 int hgd_release(struct inode *inode, struct file *file)
 {
+
+    // hgd_button_release();
+
     atomic_sub(1, &device_busy);
 
     pr_info("Device release:%u\n", atomic_read(&device_busy));
@@ -290,3 +294,4 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
 MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
 MODULE_INFO(intree, "Y");
+MODULE_VERSION("0.70.0");

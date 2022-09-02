@@ -16,10 +16,11 @@
  */
 
 #include "button.h"
-#include "button.h"
 
+#include <linux/dma-mapping.h>
 #include <linux/delay.h>
 #include <linux/gpio.h> //GPIO
+#include <linux/ioctl.h>
 #include <linux/interrupt.h>
 /* Since debounce is not supported in Raspberry pi, I have addded this to disable
 ** the false detection (multiple IRQ trigger for one interrupt).
@@ -43,14 +44,20 @@
 #define pr_fmt(fmt) HGD_NAME ": " fmt
 #endif
 
-#define DIFF_JIFFIES 50
+#define DIFF_JIFFIES 25
+#define MS_TO_MAINTAIN_CLICK 5
+#define SIGETX 44
 
 extern unsigned long volatile jiffies;
 unsigned long old_jiffies = 0;
 
+/** Global variables and defines for userspace app registration */
+#define REGISTER_UAPP _IO('R', 'g')
+static struct task_struct *task = NULL;
 
 
 static __u32 gpio_irq_number;
+
 static atomic_t thread_busy = ATOMIC_INIT(0);
 
 static irqreturn_t gpio_irq_handler(int irq, void *dev_id);
@@ -61,18 +68,28 @@ bool hgd_button_init(hgd_error_t **error)
   // Get the IRQ number for our GPIO
   gpio_irq_number = gpio_to_irq(HGD_BUTTON_GPIO);
 
-  if (request_threaded_irq(gpio_irq_number,           // IRQ number
-                           (void *)gpio_irq_handler,  // IRQ handler (Top half)
-                           gpio_interrupt_thread_fn,  // IRQ Thread handler (Bottom half)
-                           IRQF_TRIGGER_FALLING,         // Handler will be called in raising edge
-                           HGD_NAME,                  // used to identify the device name using this IRQ
-                           NULL))                     // device id for shared IRQ
+  if (request_threaded_irq(gpio_irq_number,          // IRQ number
+                           (void *)gpio_irq_handler, // IRQ handler (Top half)
+                           gpio_interrupt_thread_fn, // IRQ Thread handler (Bottom half)
+                           IRQF_TRIGGER_FALLING,     // Handler will be called in raising edge
+                           HGD_NAME,                 // used to identify the device name using this IRQ
+                           NULL))                    // device id for shared IRQ
   {
     hgd_error_new(error, HGD_ERROR_GPIO_IRQ, "cannot register IRQ");
     return false;
   }
 
   return true;
+}
+
+long hgd_button_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	if(cmd == REGISTER_UAPP) 
+  {
+		task = get_current();
+		pr_info("gpio_irq_signal: Userspace app with PID %d is registered\n", task->pid);
+	}
+  return 0;
 }
 
 inline bool hgd_button_get_state(void)
@@ -82,13 +99,17 @@ inline bool hgd_button_get_state(void)
 
 inline void hgd_button_free(void)
 {
+  if(task != NULL)
+  {
+    	task = NULL;
+  }
   free_irq(gpio_irq_number, NULL);
 }
 
 // Interrupt handler for GPIO 25. This will be called whenever there is a raising edge detected.
 irqreturn_t gpio_irq_handler(int irq, void *dev_id)
 {
-  //avoid continuos click
+  // avoid continuos click
   unsigned long diff = jiffies - old_jiffies;
   if (diff < DIFF_JIFFIES)
   {
@@ -97,14 +118,10 @@ irqreturn_t gpio_irq_handler(int irq, void *dev_id)
 
   old_jiffies = jiffies;
 
-
-  pr_info("Interrupt(IRQ Handler) %lu \n", jiffies);
-
-
   if (atomic_read(&thread_busy) > 0)
   {
-      pr_info("Thread busy\n");
-      return IRQ_HANDLED;
+    pr_info("Thread busy\n");
+    return IRQ_HANDLED;
   }
 
   atomic_inc(&thread_busy);
@@ -116,17 +133,42 @@ irqreturn_t gpio_irq_handler(int irq, void *dev_id)
   return IRQ_WAKE_THREAD;
 }
 
-irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id) 
+irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id)
 {
 
-  __u32  i = 100;
-  while (true && i)
+  for (__u8 i = 0; i < MS_TO_MAINTAIN_CLICK; i++)
   {
-    pr_info("Interrupt(Threaded Handler) : irq: %d HGD_BUTTON_GPIO : %d ", irq, hgd_button_get_state());
-    mdelay(5);
-    i--;
+    if (hgd_button_get_state() == 0)
+    {
+      atomic_sub(1, &thread_busy);
+      return IRQ_HANDLED;
+    }
+
+    mdelay(1);
   }
-  
+
+  struct kernel_siginfo info;
+
+	if(task != NULL) {
+
+    // Sending signal to app
+    memset(&info, 0, sizeof(struct kernel_siginfo));
+    info.si_signo = SIGETX;
+
+    // This is bit of a trickery: SI_QUEUE is normally used by sigqueue from user space,    and kernel space should use SI_KERNEL. 
+    // But if SI_KERNEL is used the real_time data  is not delivered to the user space signal handler function. */
+    info.si_code = SI_QUEUE;
+
+    // real time signals may have 32 bits of data.
+    info.si_int = 1;
+
+
+
+		/* Send the signal */
+		if(send_sig_info(SIGETX, (struct kernel_siginfo*) &info, task) < 0) 
+			printk("gpio_irq_signal: Error sending signal\n");
+	}
+
   atomic_sub(1, &thread_busy);
 
   return IRQ_HANDLED;

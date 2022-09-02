@@ -21,6 +21,10 @@
 
 #include "error.h"
 
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/ioctl.h>
+
 /**
  * @brief Init button 
  * 
@@ -29,6 +33,13 @@
  * @return false if error
  */
 bool hgd_button_init(hgd_error_t **error);
+
+/**
+ * @brief To send signal retrived from irq when click
+ */
+long hgd_button_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+
+// void hgd_button_release(void);
 
 /**
  * @brief Get actual button status
