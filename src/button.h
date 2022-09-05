@@ -25,6 +25,8 @@
 #include <linux/module.h>
 #include <linux/ioctl.h>
 
+#define HGD_SIGETX 44
+
 /**
  * @brief Init button 
  * 

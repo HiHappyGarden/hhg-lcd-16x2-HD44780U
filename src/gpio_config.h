@@ -20,56 +20,60 @@
 #ifndef _HDG_GPIO_CONFIG_
 #define _HDG_GPIO_CONFIG_
 
-/// IN | Button pin
-#define HGD_BUTTON_GPIO      (3) 
-
-/// OUT | Led pin
-#define HGD_LED_GPIO         (24)
-
-/// OUT | Releay port 1
-#define HGD_RELEAY_IN1_GPIO  (25) 
-
-/// OUT | Releay port 2
-#define HGD_RELEAY_IN2_GPIO  (8)
-
-/// OUT | Releay port 3
-#define HGD_RELEAY_IN3_GPIO  (7) 
-
-/// OUT | Releay port 4
-#define HGD_RELEAY_IN4_GPIO  (1) 
-
-/// OUT | Register select
-#define HGD_LCD_RS_GPIO      (26)  
-
- /// OUT | Enable
-#define HGD_LCD_E_GPIO       (19)
-
-/// OUT | Balcklighting anode
-#define HGD_LCD_BL_GPIO      (13) 
-
-/// OUT | Bit 0
-#define HGD_LCD_D4_GPIO      (6) 
-
-/// OUT | Bit 1
-#define HGD_LCD_D5_GPIO      (5) 
-
-/// OUT | Bit 2
-#define HGD_LCD_D6_GPIO      (0) 
-
-///< OUT | Bit 3
-#define HGD_LCD_D7_GPIO      (11) 
-
 #include "error.h"
 #include "constants.h"
 
 #include <linux/gpio.h>
+
+/// IN | Button pin
+#define HGD_GPIO_BUTTON      (3) 
+
+/// OUT | Led pin
+#define HGD_GPIO_LED        (24)
+
+/// OUT | Releay port 1
+#define HGD_GPIO_RELEAY_IN1 (25) 
+
+/// OUT | Releay port 2
+#define HGD_GPIO_RELEAY_IN2 (8)
+
+/// OUT | Releay port 3
+#define HGD_GPIO_RELEAY_IN3 (7) 
+
+/// OUT | Releay port 4
+#define HGD_GPIO_RELEAY_IN4 (1) 
+
+/// OUT | Register select
+#define HGD_GPIO_LED_RS     (26)  
+
+ /// OUT | Read and write
+#define HGD_GPIO_LED_RW     (9)
+
+ /// OUT | Enable
+#define HGD_GPIO_LED_E      (19)
+
+/// OUT | Balcklighting anode
+#define HGD_GPIO_LED_BL     (13) 
+
+/// OUT | Bit 0
+#define HGD_GPIO_LED_D4     (6) 
+
+/// OUT | Bit 1
+#define HGD_GPIO_LED_D5     (5) 
+
+/// OUT | Bit 2
+#define HGD_GPIO_LED_D6     (0) 
+
+///< OUT | Bit 3
+#define HGD_GPIO_LED_D7     (11) 
+
 
 /**
  * @brief Init pin configuration
  * 
  * @param[out] error if pass NULL not return erro 
  * @return 0 init correctly
- * @return true some error
+ * @return false some error
  */
 bool hgd_gpio_config_init(hgd_error_t** error);
 

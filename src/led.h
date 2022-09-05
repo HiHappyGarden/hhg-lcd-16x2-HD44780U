@@ -21,6 +21,13 @@
 
 #include <linux/init.h>
 
+#define HGD_RS_COMMAND_MODE		0   // command mode to select Insruction register with RS signal
+#define HGD_RS_DATA_MODE		1   // data mode to select Data register with RS signal
+
+#define HGD_LCD_FIRST_LINE		1
+#define HGD_LCD_SECOND_LINE		2
+
+
 /**
  * @brief Init led to off
  * 

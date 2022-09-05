@@ -46,7 +46,6 @@
 
 #define DIFF_JIFFIES 25
 #define MS_TO_MAINTAIN_CLICK 5
-#define SIGETX 44
 
 extern unsigned long volatile jiffies;
 unsigned long old_jiffies = 0;
@@ -66,7 +65,7 @@ static irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id);
 bool hgd_button_init(hgd_error_t **error)
 {
   // Get the IRQ number for our GPIO
-  gpio_irq_number = gpio_to_irq(HGD_BUTTON_GPIO);
+  gpio_irq_number = gpio_to_irq(HGD_GPIO_BUTTON);
 
   if (request_threaded_irq(gpio_irq_number,          // IRQ number
                            (void *)gpio_irq_handler, // IRQ handler (Top half)
@@ -94,7 +93,7 @@ long hgd_button_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 inline bool hgd_button_get_state(void)
 {
-  return !gpio_get_value(HGD_BUTTON_GPIO);
+  return !gpio_get_value(HGD_GPIO_BUTTON);
 }
 
 inline void hgd_button_free(void)
@@ -153,7 +152,7 @@ irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id)
 
     // Sending signal to app
     memset(&info, 0, sizeof(struct kernel_siginfo));
-    info.si_signo = SIGETX;
+    info.si_signo = HGD_SIGETX;
 
     // This is bit of a trickery: SI_QUEUE is normally used by sigqueue from user space,    and kernel space should use SI_KERNEL. 
     // But if SI_KERNEL is used the real_time data  is not delivered to the user space signal handler function. */
@@ -165,7 +164,7 @@ irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id)
 
 
 		/* Send the signal */
-		if(send_sig_info(SIGETX, (struct kernel_siginfo*) &info, task) < 0) 
+		if(send_sig_info(HGD_SIGETX, (struct kernel_siginfo*) &info, task) < 0) 
 			printk("gpio_irq_signal: Error sending signal\n");
 	}
 

@@ -20,8 +20,20 @@
 #ifndef _HDG_LCD_
 #define _HDG_LCD_
 #include "constants.h"
+#include "error.h"
 
-extern const __u8 HDG_LCD_WIDTH;
-extern const __u8 HDG_LCD_HEIGHT;
+#include <linux/init.h>
+
+#define HDG_LCD_WIDTH (16)
+#define HDG_LCD_HEIGHT (2)
+
+/**
+ * @brief Init lcd
+ * 
+ * @param[out] error if pass NULL not return erro 
+ * @return true init correctly
+ * @return false some error
+ */
+bool hgd_lcd_init(hgd_error_t** error);
 
 #endif

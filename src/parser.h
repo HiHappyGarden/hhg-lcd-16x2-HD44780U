@@ -21,12 +21,12 @@
 
 #include <linux/init.h>
 
-#define HDG_PARSER_BUFF_MAX (48)
+#define HGD_PARSER_BUFF_MAX (48)
 
 typedef struct
 {
     hgd_type_t type;
-    char buff[HDG_PARSER_BUFF_MAX];
+    char buff[HGD_PARSER_BUFF_MAX];
     __u8 status;
 } hgd_parser_t;
 

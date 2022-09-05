@@ -29,16 +29,16 @@ void hgd_led_set_state(bool state)
 {
     if(hgd_led_get_state() != state)
     {
-        gpio_set_value(HGD_LED_GPIO, state);
+        gpio_set_value(HGD_GPIO_LED, state);
     }
 }
 
 inline void hgd_led_toggle_state(void)
 {
-    hgd_led_set_state(!gpio_get_value(HGD_LED_GPIO));
+    hgd_led_set_state(!gpio_get_value(HGD_GPIO_LED));
 }
 
 inline bool hgd_led_get_state(void)
 {
-    return gpio_get_value(HGD_LED_GPIO);
+    return gpio_get_value(HGD_GPIO_LED);
 }

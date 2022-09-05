@@ -24,13 +24,13 @@ static __u8 get_relay_gpio(hgd_type_t relay)
     switch (relay)
     {
     case HGD_RELAY_1:
-        return HGD_RELEAY_IN1_GPIO;
+        return HGD_GPIO_RELEAY_IN1;
     case HGD_RELAY_2:
-        return HGD_RELEAY_IN2_GPIO;
+        return HGD_GPIO_RELEAY_IN2;
     case HGD_RELAY_3:
-        return HGD_RELEAY_IN3_GPIO;
+        return HGD_GPIO_RELEAY_IN3;
     case HGD_RELAY_4:
-        return HGD_RELEAY_IN4_GPIO;
+        return HGD_GPIO_RELEAY_IN4;
     default:
         return 0;
     }

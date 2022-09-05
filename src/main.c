@@ -31,6 +31,7 @@
 #include "led.h"
 #include "relay.h"
 #include "button.h"
+#include "lcd.h"
 
 #ifdef pr_fmt
 #undef pr_fmt
@@ -117,7 +118,8 @@ ssize_t hgd_read(struct file *filp, char __user *buff, size_t count, loff_t *off
                             "HGD_RELAY_3:\t%u\n"
                             "HGD_RELAY_4:\t%u\n",
                             hgd_led_get_state(),
-                            NOT_DEF, NOT_DEF,
+                            hgd_button_get_state(), 
+                            NOT_DEF,
                             hgd_relay_get_state(HGD_RELAY_1),
                             hgd_relay_get_state(HGD_RELAY_2),
                             hgd_relay_get_state(HGD_RELAY_3),
@@ -139,7 +141,7 @@ ssize_t hgd_read(struct file *filp, char __user *buff, size_t count, loff_t *off
 ssize_t hgd_write(struct file *filp, const char __user *buff, size_t len, loff_t *off)
 {
     len--;
-    if (len > HDG_PARSER_BUFF_MAX)
+    if (len > HGD_PARSER_BUFF_MAX)
     {
         return -EINVAL;
     }
@@ -237,23 +239,39 @@ int __init hgd_driver_init(void)
 
     // load pin config
     hgd_error_t *error = NULL;
+
+    pr_info("GIPO config start");
     if (!hgd_gpio_config_init(&error))
     {
-        hgd_error_print(error, "Cannot init gpio config", true);
+        hgd_error_print(error, "GIPO config fail", true);
         goto r_gpio_config;
     }
+    pr_info("GPIOs config done");
 
+    pr_info("Button driver start");
     if (!hgd_button_init(&error))
     {
-        hgd_error_print(error, "Cannot init button", true);
+        hgd_error_print(error, "Button driver fail", true);
         goto r_gpio_config;
     }
+    pr_info("Button driver done");
 
+    pr_info("LCD driver start");
+    if (!hgd_lcd_init(&error))
+    {
+        hgd_error_print(error, "LCD driver fail", true);
+        goto r_gpio_config;
+    }
+    pr_info("LCD driver done");
+
+    pr_info("LED driver start");
     hgd_led_init();
+
+    pr_info("Realy driver start");
     hgd_relay_init();
 
+    pr_info("Done\n");
 
-    pr_info("Happy GarderPI driver insert...Done\n");
     return 0;
 
 r_gpio_config:
@@ -284,7 +302,7 @@ static void __exit hgd_driver_exit(void)
     class_destroy(hgd_class);
     cdev_del(&hgd_cdev);
     unregister_chrdev_region(hgd_dev, 1);
-    pr_info("Happy GarderPI driver remove... done");
+    pr_info("Removed");
 }
 
 module_init(hgd_driver_init);
