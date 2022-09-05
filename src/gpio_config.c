@@ -70,10 +70,10 @@ bool hgd_gpio_config_init(hgd_error_t** error)
     gpio_direction_output(HGD_GPIO_LED_RW, 0);
     gpio_direction_output(HGD_GPIO_LED_E, 0);
     gpio_direction_output(HGD_GPIO_LED_BL, 0);
-    gpio_direction_output(HGD_GPIO_LED_D4, 0);
-    gpio_direction_output(HGD_GPIO_LED_D5, 0);
-    gpio_direction_output(HGD_GPIO_LED_D6, 0);
-    gpio_direction_output(HGD_GPIO_LED_D7, 0);
+    gpio_direction_output(HGD_GPIO_LED_DB4, 0);
+    gpio_direction_output(HGD_GPIO_LED_DB5, 0);
+    gpio_direction_output(HGD_GPIO_LED_DB6, 0);
+    gpio_direction_output(HGD_GPIO_LED_DB7, 0);
 
 
     /* Using this call the GPIO 21 will be visible in /sys/class/gpio/
@@ -94,10 +94,10 @@ bool hgd_gpio_config_init(hgd_error_t** error)
     gpio_export(HGD_GPIO_LED_RW, false);
     gpio_export(HGD_GPIO_LED_E, false);
     gpio_export(HGD_GPIO_LED_BL, false);
-    gpio_export(HGD_GPIO_LED_D4, false);
-    gpio_export(HGD_GPIO_LED_D5, false);
-    gpio_export(HGD_GPIO_LED_D6, false);
-    gpio_export(HGD_GPIO_LED_D7, false);
+    gpio_export(HGD_GPIO_LED_DB4, false);
+    gpio_export(HGD_GPIO_LED_DB5, false);
+    gpio_export(HGD_GPIO_LED_DB6, false);
+    gpio_export(HGD_GPIO_LED_DB7, false);
     return true;
 
 r_gpio:
@@ -118,10 +118,10 @@ void hgd_gpio_config_unexport(void)
     gpio_unexport(HGD_GPIO_LED_RW);
     gpio_unexport(HGD_GPIO_LED_E);
     gpio_unexport(HGD_GPIO_LED_BL);
-    gpio_unexport(HGD_GPIO_LED_D4);
-    gpio_unexport(HGD_GPIO_LED_D5);
-    gpio_unexport(HGD_GPIO_LED_D6);
-    gpio_unexport(HGD_GPIO_LED_D7);
+    gpio_unexport(HGD_GPIO_LED_DB4);
+    gpio_unexport(HGD_GPIO_LED_DB5);
+    gpio_unexport(HGD_GPIO_LED_DB6);
+    gpio_unexport(HGD_GPIO_LED_DB7);
 }
 
 void hgd_gpio_config_free(void)
@@ -136,10 +136,10 @@ void hgd_gpio_config_free(void)
     gpio_free(HGD_GPIO_LED_RW);
     gpio_free(HGD_GPIO_LED_E);
     gpio_free(HGD_GPIO_LED_BL);
-    gpio_free(HGD_GPIO_LED_D4);
-    gpio_free(HGD_GPIO_LED_D5);
-    gpio_free(HGD_GPIO_LED_D6);
-    gpio_free(HGD_GPIO_LED_D7);
+    gpio_free(HGD_GPIO_LED_DB4);
+    gpio_free(HGD_GPIO_LED_DB5);
+    gpio_free(HGD_GPIO_LED_DB6);
+    gpio_free(HGD_GPIO_LED_DB7);
 }
 
 bool hgd_gpio_consig_is_valid(hgd_error_t** error)
@@ -155,10 +155,10 @@ bool hgd_gpio_consig_is_valid(hgd_error_t** error)
     HGD_IS_VALID(HGD_GPIO_LED_RS, "HGD_GPIO_LED_RW")
     HGD_IS_VALID(HGD_GPIO_LED_E, "HGD_GPIO_LED_E")
     HGD_IS_VALID(HGD_GPIO_LED_BL, "HGD_GPIO_LED_BL")
-    HGD_IS_VALID(HGD_GPIO_LED_D4, "HGD_GPIO_BUTTON")
-    HGD_IS_VALID(HGD_GPIO_LED_D5, "HGD_GPIO_BUTTON")
-    HGD_IS_VALID(HGD_GPIO_LED_D6, "HGD_GPIO_LED_D6")
-    HGD_IS_VALID(HGD_GPIO_LED_D7, "HGD_GPIO_LED_D7")
+    HGD_IS_VALID(HGD_GPIO_LED_DB4, "HGD_GPIO_BUTTON")
+    HGD_IS_VALID(HGD_GPIO_LED_DB5, "HGD_GPIO_BUTTON")
+    HGD_IS_VALID(HGD_GPIO_LED_DB6, "HGD_GPIO_LED_DB6")
+    HGD_IS_VALID(HGD_GPIO_LED_DB7, "HGD_GPIO_LED_DB7")
     
 
     return true;
@@ -175,9 +175,9 @@ bool hgd_gpio_config_request(hgd_error_t** error)
     HGD_REQUEST(HGD_GPIO_LED_RS, "HGD_GPIO_LED_RS")
     HGD_REQUEST(HGD_GPIO_LED_E, "HGD_GPIO_LED_E")
     HGD_REQUEST(HGD_GPIO_LED_BL, "HGD_GPIO_LED_BL")
-    HGD_REQUEST(HGD_GPIO_LED_D4, "HGD_GPIO_BUTTON")
-    HGD_REQUEST(HGD_GPIO_LED_D5, "HGD_GPIO_BUTTON")
-    HGD_REQUEST(HGD_GPIO_LED_D6, "HGD_GPIO_LED_D6")
-    HGD_REQUEST(HGD_GPIO_LED_D7, "HGD_GPIO_LED_D7")
+    HGD_REQUEST(HGD_GPIO_LED_DB4, "HGD_GPIO_BUTTON")
+    HGD_REQUEST(HGD_GPIO_LED_DB5, "HGD_GPIO_BUTTON")
+    HGD_REQUEST(HGD_GPIO_LED_DB6, "HGD_GPIO_LED_DB6")
+    HGD_REQUEST(HGD_GPIO_LED_DB7, "HGD_GPIO_LED_DB7")
     return true;
 }

@@ -36,16 +36,43 @@ bool hgd_lcd_init(hgd_error_t** error)
     gpio_set_value(HGD_GPIO_LED_RW, false);
     gpio_set_value(HGD_GPIO_LED_E, false);
     gpio_set_value(HGD_GPIO_LED_BL, false);
-    gpio_set_value(HGD_GPIO_LED_D4, false);
-    gpio_set_value(HGD_GPIO_LED_D5, false);
-    gpio_set_value(HGD_GPIO_LED_D6, false);
-    gpio_set_value(HGD_GPIO_LED_D7, false);
+    gpio_set_value(HGD_GPIO_LED_DB4, false);
+    gpio_set_value(HGD_GPIO_LED_DB5, false);
+    gpio_set_value(HGD_GPIO_LED_DB6, false);
+    gpio_set_value(HGD_GPIO_LED_DB7, false);
 
 //hgd_lcd_send('c');
-    usleep_range(40000, 2000);
+    usleep_range(41*1000, 50*1000);	// wait for more than 40 ms once the power is on
 
-    gpio_set_value(HGD_GPIO_LED_D4, true);
-    gpio_set_value(HGD_GPIO_LED_D5, true);
+    gpio_set_value(HGD_GPIO_LED_DB4, true);
+    gpio_set_value(HGD_GPIO_LED_DB5, true);
+    usleep_range(5*1000, 6*1000);	// wait for more than 4.1 ms
+    
+    gpio_set_value(HGD_GPIO_LED_DB4, true);
+    gpio_set_value(HGD_GPIO_LED_DB5, true);
+    usleep_range(100,200);		// wait for more than 100 us
+
+    gpio_set_value(HGD_GPIO_LED_DB4, true);
+    gpio_set_value(HGD_GPIO_LED_DB5, true);
+    usleep_range(100,200);		// wait for more than 100 us
+
+    gpio_set_value(HGD_GPIO_LED_DB4, false);
+    gpio_set_value(HGD_GPIO_LED_DB5, true);
+    usleep_range(100,200);		// wait for more than 100 us
+
+    gpio_set_value(HGD_GPIO_LED_DB4, false);
+    gpio_set_value(HGD_GPIO_LED_DB5, true);
+    usleep_range(100,200);		// wait for more than 100 us
+
+    gpio_set_value(HGD_GPIO_LED_DB4, false);
+    gpio_set_value(HGD_GPIO_LED_DB5, false);
+    gpio_set_value(HGD_GPIO_LED_DB7, true);
+    usleep_range(41*1000,50*1000);
+
+    usleep_range(41*1000,50*1000);
+    gpio_set_value(HGD_GPIO_LED_DB7, false);
+    gpio_set_value(HGD_GPIO_LED_DB7, true); 
+    usleep_range(100,200);		// wait for more than 100 us
 
     return true;
 }
@@ -63,10 +90,10 @@ void hgd_lcd_pulse(void)
 
 void hgd_lcd_write(__u8 value)
 {
-    gpio_set_value(HGD_GPIO_LED_D4, (value >> 0 ) & 0x01);
-    gpio_set_value(HGD_GPIO_LED_D5, (value >> 1 ) & 0x01);
-    gpio_set_value(HGD_GPIO_LED_D6, (value >> 3 ) & 0x01);
-    gpio_set_value(HGD_GPIO_LED_D7, (value >> 4 ) & 0x01);
+    gpio_set_value(HGD_GPIO_LED_DB4, (value >> 0 ) & 0x01);
+    gpio_set_value(HGD_GPIO_LED_DB5, (value >> 1 ) & 0x01);
+    gpio_set_value(HGD_GPIO_LED_DB6, (value >> 3 ) & 0x01);
+    gpio_set_value(HGD_GPIO_LED_DB7, (value >> 4 ) & 0x01);
 
     hgd_lcd_pulse();
 }
