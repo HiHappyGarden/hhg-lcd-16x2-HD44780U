@@ -55,3 +55,4 @@ build/
 .vscode/targets.log
 .vscode/configurationCache.log
 .vscode/dryrun.log
+.DS_Store
