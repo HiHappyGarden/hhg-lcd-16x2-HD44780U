@@ -1,6 +1,6 @@
 /*
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
