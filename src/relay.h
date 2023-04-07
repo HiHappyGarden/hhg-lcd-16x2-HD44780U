@@ -35,13 +35,13 @@ void hgd_relay_init(void);
  * @param set true = on
  * @param set false = off
  */
-void hgd_relay_set_state(hgd_type_t relay, bool set);
+void hgd_relay_set_state(enum hgd_type relay, bool set);
 
 /**
  * @brief Togle relay
  * 
  */
-void hgd_relay_toggle_state(hgd_type_t relay);
+void hgd_relay_toggle_state(enum hgd_type relay);
 
 /**
  * @brief Get actual relay status
@@ -49,7 +49,7 @@ void hgd_relay_toggle_state(hgd_type_t relay);
  * @return true Turn on
  * @return false Turn off
  */
-bool hgd_relay_get_state(hgd_type_t relay);
+bool hgd_relay_get_state(enum hgd_type relay);
 
 
 #endif

@@ -25,7 +25,7 @@
 typedef unsigned char __u8;
 typedef void* hgd_ptr;
 
-typedef enum
+enum hgd_type
 {
     HGD_LED,
     HGD_RELAY_1,
@@ -34,7 +34,7 @@ typedef enum
     HGD_RELAY_4,
     HGD_BUTTON,
     HGD_LCD,
-} hgd_type_t;
+};
 
 
 #endif

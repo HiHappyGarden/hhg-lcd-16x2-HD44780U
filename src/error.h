@@ -27,7 +27,7 @@
 /**
  * @brief Error code 
  */
-typedef enum 
+enum hgd_error_code
 {
     HGD_ERROR_NONE,
     HGD_ERROR_GPIO_NOT_VALID = 0x01,
@@ -36,17 +36,16 @@ typedef enum
     HGD_ERROR_GPIO_IRQ,
     HGD_ERROR_SYS_INFO_SYSFS_CREATE,
     HGD_ERROR_SYS_INFO_SYSFS_NO_VHEAP,
-    
-} hgd_error_code_t;
+};
 
 /**
  * @brief Error structure
  */
-typedef struct
+struct hgd_error
 {
-    hgd_error_code_t code;          //!< Error code
+    enum hgd_error_code code;          //!< Error code
     char msg[MSG_LEN_ERROR_HGD];    //!< Error message
-} hgd_error_t;
+};
 
 /**
  * @brief Build new error
@@ -55,7 +54,7 @@ typedef struct
  * @return 0 ok 
  * @return 0 error 
  */
-bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg);
+bool hgd_error_new(struct hgd_error** error, enum hgd_error_code code, const char* msg);
 
 /**
  * @brief Prinnt and free error
@@ -64,20 +63,20 @@ bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg);
  * @param msg addtidional message to add if NULL not print nothing
  * @param free 0 not free
  */
-void hgd_error_print(hgd_error_t* error, const char* msg, bool free);
+void hgd_error_print(struct hgd_error* error, const char* msg, bool free);
 
 /**
  * @brief Gel last error
  * 
- * @return const hgd_error_t* NULL il no error occured
+ * @return const struct hgd_error* NULL il no error occured
  */
-const hgd_error_t * hgd_erro_get_last(void);
+const struct hgd_error * hgd_erro_get_last(void);
 
 /**
  * @brief Free a rerro
  * 
  * @param error to free
  */
-void hgd_error_free(hgd_error_t** error);
+void hgd_error_free(struct hgd_error** error);
 
 #endif

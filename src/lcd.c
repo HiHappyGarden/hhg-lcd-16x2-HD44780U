@@ -30,7 +30,7 @@ static void hgd_lcd_send(__u8 value);
  * @brief Init lcd
  * 
  */
-bool hgd_lcd_init(hgd_error_t** error)
+bool hgd_lcd_init(struct hgd_error** error)
 {
     gpio_set_value(HGD_GPIO_LED_RS, false);
     gpio_set_value(HGD_GPIO_LED_RW, false);

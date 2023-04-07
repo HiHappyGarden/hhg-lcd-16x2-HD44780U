@@ -33,14 +33,14 @@
         parser->status = status; \
         return true; 
 
-bool hgd_parser_params(const char* buff, size_t len, hgd_parser_t* parser)
+bool hgd_parser_params(const char* buff, size_t len, struct hgd_parser* parser)
 {
     if (!parser || !buff)
     {
         return false;
     }
 
-    memset(parser, 0, sizeof(hgd_parser_t));
+    memset(parser, 0, sizeof(struct hgd_parser));
 
     char args[2][HGD_PARSER_BUFF_MAX] = {
         [0] = {0},

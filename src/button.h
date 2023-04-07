@@ -34,7 +34,7 @@
  * @return true if ok
  * @return false if error
  */
-bool hgd_button_init(hgd_error_t **error);
+bool hgd_button_init(struct hgd_error **error);
 
 /**
  * @brief To send signal retrived from irq when click

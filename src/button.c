@@ -62,7 +62,7 @@ static atomic_t thread_busy = ATOMIC_INIT(0);
 static irqreturn_t gpio_irq_handler(int irq, void *dev_id);
 static irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id);
 
-bool hgd_button_init(hgd_error_t **error)
+bool hgd_button_init(struct hgd_error **error)
 {
   // Get the IRQ number for our GPIO
   gpio_irq_number = gpio_to_irq(HGD_GPIO_BUTTON);

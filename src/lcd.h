@@ -34,6 +34,6 @@
  * @return true init correctly
  * @return false some error
  */
-bool hgd_lcd_init(hgd_error_t** error);
+bool hgd_lcd_init(struct hgd_error** error);
 
 #endif

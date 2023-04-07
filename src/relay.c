@@ -19,7 +19,7 @@
 #include "relay.h"
 #include "gpio_config.h"
 
-static __u8 get_relay_gpio(hgd_type_t relay)
+static __u8 get_relay_gpio(enum hgd_type relay)
 {
     switch (relay)
     {
@@ -43,7 +43,7 @@ void hgd_relay_init(void)
     hgd_relay_set_state(HGD_RELAY_4, false);
 }
 
-void hgd_relay_set_state(hgd_type_t relay, bool state)
+void hgd_relay_set_state(enum hgd_type relay, bool state)
 {
     if(hgd_relay_get_state(relay) != state)
     {
@@ -55,7 +55,7 @@ void hgd_relay_set_state(hgd_type_t relay, bool state)
     }
 }
 
-inline void hgd_relay_toggle_state(hgd_type_t relay)
+inline void hgd_relay_toggle_state(enum hgd_type relay)
 {
     __u8 gpio = 0;
     if((gpio = get_relay_gpio(relay)) > 0)
@@ -64,7 +64,7 @@ inline void hgd_relay_toggle_state(hgd_type_t relay)
     }
 }
 
-inline bool hgd_relay_get_state(hgd_type_t relay)
+inline bool hgd_relay_get_state(enum hgd_type relay)
 {
     __u8 gpio = 0;
     if((gpio = get_relay_gpio(relay)) > 0)

@@ -75,7 +75,7 @@
  * @return 0 init correctly
  * @return false some error
  */
-bool hgd_gpio_config_init(hgd_error_t** error);
+bool hgd_gpio_config_init(struct hgd_error** error);
 
 /**
  * @brief Free pin config
