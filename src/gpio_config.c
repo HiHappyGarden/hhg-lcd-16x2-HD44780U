@@ -1,6 +1,6 @@
 /*
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@
         return false; \
     }
 
-static bool hgd_gpio_consig_is_valid(hgd_error_t** error);
-static bool hgd_gpio_config_request(hgd_error_t** error);
+static bool hgd_gpio_consig_is_valid(struct hgd_error** error);
+static bool hgd_gpio_config_request(struct hgd_error** error);
 
-bool hgd_gpio_config_init(hgd_error_t** error)
+bool hgd_gpio_config_init(struct hgd_error** error)
 {
     if (hgd_gpio_consig_is_valid(error) == false)
     {
@@ -142,7 +142,7 @@ void hgd_gpio_config_free(void)
     gpio_free(HGD_GPIO_LED_DB7);
 }
 
-bool hgd_gpio_consig_is_valid(hgd_error_t** error)
+bool hgd_gpio_consig_is_valid(struct hgd_error** error)
 {
     // Checking the GPIO is valid or not
     HGD_IS_VALID(HGD_GPIO_BUTTON, "HGD_GPIO_BUTTON")
@@ -164,7 +164,7 @@ bool hgd_gpio_consig_is_valid(hgd_error_t** error)
     return true;
 }
 
-bool hgd_gpio_config_request(hgd_error_t** error)
+bool hgd_gpio_config_request(struct hgd_error** error)
 {
     HGD_REQUEST(HGD_GPIO_BUTTON, "HGD_GPIO_BUTTON")
     HGD_REQUEST(HGD_GPIO_LED, "HGD_GPIO_LED")

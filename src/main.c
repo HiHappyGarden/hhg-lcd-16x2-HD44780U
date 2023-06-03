@@ -1,6 +1,6 @@
 /*
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ ssize_t hgd_write(struct file *filp, const char __user *buff, size_t len, loff_t
 
     kfree(params);
 
-    hgd_parser_t parsed;
+    struct hgd_parser parsed;
     if (!hgd_parser_params(params, len, &parsed))
     {
         return 1;
@@ -238,7 +238,7 @@ int __init hgd_driver_init(void)
     }
 
     // load pin config
-    hgd_error_t *error = NULL;
+    struct hgd_error *error = NULL;
 
     pr_info("GIPO config start");
     if (!hgd_gpio_config_init(&error))

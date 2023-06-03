@@ -1,6 +1,6 @@
 /* 
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  * 
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
@@ -34,7 +34,7 @@
  * @return true if ok
  * @return false if error
  */
-bool hgd_button_init(hgd_error_t **error);
+bool hgd_button_init(struct hgd_error **error);
 
 /**
  * @brief To send signal retrived from irq when click

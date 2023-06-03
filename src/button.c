@@ -1,6 +1,6 @@
 /*
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ static atomic_t thread_busy = ATOMIC_INIT(0);
 static irqreturn_t gpio_irq_handler(int irq, void *dev_id);
 static irqreturn_t gpio_interrupt_thread_fn(int irq, void *dev_id);
 
-bool hgd_button_init(hgd_error_t **error)
+bool hgd_button_init(struct hgd_error **error)
 {
   // Get the IRQ number for our GPIO
   gpio_irq_number = gpio_to_irq(HGD_GPIO_BUTTON);

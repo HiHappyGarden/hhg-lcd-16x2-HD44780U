@@ -1,6 +1,6 @@
 /* 
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  * 
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
@@ -30,10 +30,10 @@
 #endif
 
 
-static hgd_error_t *last_error = NULL;
+static struct hgd_error *last_error = NULL;
 
 
-bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
+bool hgd_error_new(struct hgd_error** error, enum hgd_error_code code, const char* msg)
 {
     if(error == NULL)
     {
@@ -45,7 +45,7 @@ bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
         last_error = NULL;
         return false;
     }
-    *error = vmalloc(sizeof(hgd_error_t));
+    *error = vmalloc(sizeof(struct hgd_error));
     if(!*error)
     {
         last_error = NULL;
@@ -58,7 +58,7 @@ bool hgd_error_new(hgd_error_t** error, hgd_error_code_t code, const char* msg)
     return true;
 }
 
-void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free)
+void hgd_error_print(struct hgd_error* error, const char* msg, _Bool free)
 {
     if(error == NULL)
     {
@@ -94,12 +94,12 @@ void hgd_error_print(hgd_error_t* error, const char* msg, _Bool free)
     }
 }
 
-inline const hgd_error_t * hgd_erro_get_last(void)
+inline const struct hgd_error * hgd_erro_get_last(void)
 {
     return last_error;
 }
 
-void hgd_error_free(hgd_error_t** error)
+void hgd_error_free(struct hgd_error** error)
 {
     if(*error == NULL)
     {

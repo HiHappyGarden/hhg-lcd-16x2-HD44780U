@@ -1,6 +1,6 @@
 /*
  * This file is part of the Happy GardenPI distribution (https://github.com/HappyGardenPI/happy-gardenpi-driver).
- * Copyright (c) 2022 Antonio Salsi.
+ * Copyright (c) 2022-23 Antonio Salsi.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@
 
 #define HGD_PARSER_BUFF_MAX (48)
 
-typedef struct
+struct hgd_parser
 {
-    hgd_type_t type;
+    enum hgd_type type;
     char buff[HGD_PARSER_BUFF_MAX];
     __u8 status;
-} hgd_parser_t;
+};
 
 /**
  * @brief Parse write section
@@ -39,6 +39,6 @@ typedef struct
  * @return true successful
  * @return false fail
  */
-bool hgd_parser_params(const char* buff, size_t len, hgd_parser_t* parser);
+bool hgd_parser_params(const char* buff, size_t len, struct hgd_parser* parser);
 
 #endif
