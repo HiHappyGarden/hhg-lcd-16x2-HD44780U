@@ -13,6 +13,7 @@
         "gpio_config.h": "c",
         "gpio.h": "c",
         "ioctl.h": "c",
-        "lcd.h": "c"
+        "lcd.h": "c",
+        "type_traits": "c"
     }
 }

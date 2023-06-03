@@ -270,8 +270,6 @@ int __init hgd_driver_init(void)
     pr_info("Realy driver start");
     hgd_relay_init();
 
-    pr_info("Done\n");
-
     return 0;
 
 r_gpio_config:
