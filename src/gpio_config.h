@@ -56,13 +56,13 @@
 #define HGD_GPIO_LED_BL     (13) 
 
 /// OUT | Bit 0
-#define HGD_GPIO_LED_DB4     (6) 
+#define HGD_GPIO_LED_DB4     (13) 
 
 /// OUT | Bit 1
-#define HGD_GPIO_LED_DB5     (5) 
+#define HGD_GPIO_LED_DB5     (6) 
 
 /// OUT | Bit 2
-#define HGD_GPIO_LED_DB6     (0) 
+#define HGD_GPIO_LED_DB6     (5) 
 
 ///< OUT | Bit 3
 #define HGD_GPIO_LED_DB7     (11) 
