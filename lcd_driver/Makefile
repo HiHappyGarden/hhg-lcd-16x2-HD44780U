@@ -1,8 +1,7 @@
-# make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
+obj-m += hgd_lcd.o 
 
-obj-m += happygardenpidriver.o 
-happygardenpidriver-objs := src/happygardenpidriver.o 
-
+ccflags-y := -std=gnu11 -Wno-declaration-after-statement
+EXTRA_CFLAGS:= -D TEST=1
 
 PWD := $(CURDIR)
  
