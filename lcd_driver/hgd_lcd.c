@@ -30,9 +30,9 @@
 #endif
 
 #define HGD_IS_VALID(gpio, msg) \
-    if (gpio_is_valid(gpio) == false) \
+    if (!gpio_is_valid(gpio)) \
     { \
-        pr_err(msg); \
+        pr_err("GPIO " msg " wrong pin:%d", gpio); \
         return -EINVAL; \
     } 
 
@@ -93,13 +93,17 @@ static bool hgd_lcd_init_8_bit(void);
 
 static bool hgd_lcd_init_4_bit(void);
 
-static void hgd_lcd_write_nibble(unsigned char nibble);
+static void hgd_lcd_write_nibble(__u8 nibble);
 
-static void hgd_lcd_send_byte(unsigned char byte, unsigned char mode);
+static void hgd_lcd_send_byte(__u8 byte, __u8 mode);
 
-static void hgd_lcd_send_command(unsigned char command);
+static void hgd_lcd_send_command(__u8 command);
 
-static void hgd_lcd_send_data(unsigned char data);
+void hgd_lcd_send_data(__u8 data)
+{
+    hgd_lcd_send_byte(data, 1);
+}
+EXPORT_SYMBOL(hgd_lcd_send_data);
 
 /*
 * Module Init function
@@ -177,6 +181,11 @@ static int __init hgd_lcd_init(void)
         }
     }
 
+
+    hgd_lcd_send_data('C');
+    hgd_lcd_send_data('i');
+    hgd_lcd_send_data('a');
+    hgd_lcd_send_data('o');
     return 0;
 }
 
@@ -187,7 +196,7 @@ static void __exit hgd_lcd_exit(void)
 {
 
     gpio_free(gpio_rs);
-    if(gpio_rw)
+    if(gpio_rw > -1)
     {
         gpio_free(gpio_rw);
     }
@@ -203,18 +212,43 @@ static void __exit hgd_lcd_exit(void)
     gpio_free(gpio_db5);
     gpio_free(gpio_db6);
     gpio_free(gpio_db7);
-    
+    pr_info("exit");
 }
 
 bool hgd_lcd_init_8_bit(void)
 {
+    pr_info("init 8 bit data mode done gpio_rs:%d gpio_rw:%d gpio_en:%d gpio_db0:%d gpio_db1:%d gpio_db2:%d gpio_db3:%d gpio_db4:%d gpio_db5:%d gpio_db6:%d gpio_db7:%d"
+        , gpio_rs
+        , gpio_rw
+        , gpio_en
+        , gpio_db0
+        , gpio_db1
+        , gpio_db2
+        , gpio_db3
+        , gpio_db4
+        , gpio_db5
+        , gpio_db6
+        , gpio_db7
+    );
+
     return false;
 }
 
 bool hgd_lcd_init_4_bit(void)
 {
+
+    pr_info("init 4 bit data mode done gpio_rs:%d gpio_rw:%d gpio_en:%d gpio_db4:%d gpio_db5:%d gpio_db6:%d gpio_db7:%d"
+        , gpio_rs
+        , gpio_rw
+        , gpio_en
+        , gpio_db4
+        , gpio_db5
+        , gpio_db6
+        , gpio_db7
+    );
+
     HGD_IS_VALID(gpio_rs, "RS")
-    if(gpio_rw)
+    if(gpio_rw > -1)
     {
         HGD_IS_VALID(gpio_rw, "RW")
     }
@@ -225,7 +259,7 @@ bool hgd_lcd_init_4_bit(void)
     HGD_IS_VALID(gpio_db7, "DB7")
     
     gpio_request_one(gpio_rs, GPIOF_OUT_INIT_LOW, "RS");
-    if(gpio_rw)
+    if(gpio_rw > -1)
     {
         gpio_request_one(gpio_rw, GPIOF_OUT_INIT_LOW, "RW");
     }
@@ -249,13 +283,11 @@ bool hgd_lcd_init_4_bit(void)
     hgd_lcd_send_command(0x06); // Entry mode: increment cursor, no shift
     hgd_lcd_send_command(0x01); // Clear display
 
-   // pr_info("init 4 bit done gpio_rs:%d gpio_rw:%d gpio_en:%d gpio_db4:%d  gpio_db5:%d  gpio_db6:%d  gpio_db7:%d", gpio_rs, gpio_rw, gpio_en, gpio_db4, gpio_db5, gpio_db6, gpio_db7);
-
     return 0;
 }
 
 
-void hgd_lcd_write_nibble(unsigned char nibble)
+void hgd_lcd_write_nibble(__u8 nibble)
 {
     gpio_set_value(gpio_db4, nibble & 0x01);
     gpio_set_value(gpio_db5, nibble & 0x02);
@@ -270,7 +302,7 @@ void hgd_lcd_write_nibble(unsigned char nibble)
 }
 
 
-static void hgd_lcd_send_byte(unsigned char byte, unsigned char mode)
+static void hgd_lcd_send_byte(__u8 byte, __u8 mode)
 {
     gpio_set_value(gpio_rs, mode);
 
@@ -280,14 +312,9 @@ static void hgd_lcd_send_byte(unsigned char byte, unsigned char mode)
     msleep(1);
 }
 
-static void hgd_lcd_send_command(unsigned char command)
+static void hgd_lcd_send_command(__u8 command)
 {
     hgd_lcd_send_byte(command, 0);
-}
-
-static void hgd_lcd_send_data(unsigned char data)
-{
-    hgd_lcd_send_byte(data, 1);
 }
 
 module_init(hgd_lcd_init);
