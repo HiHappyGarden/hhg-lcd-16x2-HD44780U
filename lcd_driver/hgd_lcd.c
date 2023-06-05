@@ -23,6 +23,8 @@
 #include <linux/types.h>
 #include <linux/gpio.h>
 #include <linux/delay.h>
+#include <linux/string.h>
+#include <linux/cdev.h>
 
 #ifdef pr_fmt
 #undef pr_fmt
@@ -30,11 +32,21 @@
 #endif
 
 #define HGD_IS_VALID(gpio, msg) \
-    if (!gpio_is_valid(gpio)) \
-    { \
-        pr_err("GPIO " msg " wrong pin:%d", gpio); \
-        return -EINVAL; \
-    } 
+if (!gpio_is_valid(gpio)) \
+{ \
+    pr_err("GPIO " msg " wrong pin:%d", gpio); \
+    return -EINVAL; \
+} 
+
+#define HGD_DRIVER_NAME "hgd_lcd"
+
+#define READ_BUFF_LEN (256)
+
+// data
+static dev_t hgd_dev = 0;
+static struct class *hgd_class;
+static struct cdev hgd_cdev;
+static atomic_t device_busy = ATOMIC_INIT(0);
 
 static bool data_mode_8_bit = false;
 static bool enable_read_mode = false;
@@ -52,6 +64,52 @@ static short gpio_db6  = -1;
 static short gpio_db7  = -1;
 
 
+// static decl
+/**
+ * Init LCD 8 bit
+*/
+static bool hgd_lcd_init_8_bit(void);
+
+/**
+ * Init LCD 4 bit
+*/
+static bool hgd_lcd_init_4_bit(void);
+
+/**
+ * Write 4 bit
+*/
+static void hgd_lcd_write_nibble(__u8 nibble);
+
+/**
+ * Send 1 byte to lcd
+*/
+static void hgd_lcd_send_byte(__u8 byte, __u8 mode);
+
+/**
+ * Send command to lcd
+*/
+static void hgd_lcd_send_command(__u8 command);
+
+
+static int hgd_lcd_open(struct inode *inode, struct file *file);
+static int hgd_lcd_release(struct inode *inode, struct file *file);
+static ssize_t hgd_lcd_read(struct file *filp, char __user *buff, size_t len, loff_t *off);
+static ssize_t hgd_lcd_write(struct file *filp, const char *buff, size_t len, loff_t *off);
+
+/**
+ * @brief Change access permission in user space
+ */
+static int hgd_lcd_uevent(struct device *dev, struct kobj_uevent_env *env);
+
+// File operation structure
+static struct file_operations fops = {
+    .owner = THIS_MODULE,
+    .read = hgd_lcd_read,
+    .write = hgd_lcd_write,
+    .open = hgd_lcd_open,
+    // .unlocked_ioctl = hgd_button_ioctl,
+    .release = hgd_lcd_release
+};
 
 module_param(gpio_rs, short, 0660);
 MODULE_PARM_DESC(gpio_rs, "GPIO RS - Select registers");
@@ -86,18 +144,6 @@ MODULE_PARM_DESC(gpio_db6, "GPIO DB6 - bit 6");
 module_param(gpio_db7, short, 0660);
 MODULE_PARM_DESC(gpio_db7, "GPIO DB7 - bit 7");
 
-/**
- * Init LCD 8 bit
-*/
-static bool hgd_lcd_init_8_bit(void);
-
-static bool hgd_lcd_init_4_bit(void);
-
-static void hgd_lcd_write_nibble(__u8 nibble);
-
-static void hgd_lcd_send_byte(__u8 byte, __u8 mode);
-
-static void hgd_lcd_send_command(__u8 command);
 
 void hgd_lcd_send_data(__u8 data)
 {
@@ -105,11 +151,53 @@ void hgd_lcd_send_data(__u8 data)
 }
 EXPORT_SYMBOL(hgd_lcd_send_data);
 
+void hgd_lcd_send_str(const char* str, __u16 len)
+{
+    for(__u16 i = 0; i < len; i++)
+    {
+        hgd_lcd_send_byte(str[i], 1);
+    }
+}
+EXPORT_SYMBOL(hgd_lcd_send_str);
+
 /*
 * Module Init function
 */
 static int __init hgd_lcd_init(void)
 {
+    /*Allocating Major number*/
+    if ((alloc_chrdev_region(&hgd_dev, 0, 1, "hgd_Dev")) < 0)
+    {
+        pr_err("cannot allocate major number\n");
+        goto r_unreg;
+    }
+    pr_info("Major = %d Minor = %d \n", MAJOR(hgd_dev), MINOR(hgd_dev));
+
+    /*Creating cdev structure*/
+    cdev_init(&hgd_cdev, &fops);
+
+    /*Adding character device to the system*/
+    if ((cdev_add(&hgd_cdev, hgd_dev, 1)) < 0)
+    {
+        pr_err("cannot add the device to the system\n");
+        goto r_dev;
+    }
+
+    /*Creating struct class*/
+    if ((hgd_class = class_create(THIS_MODULE, "hgd_class")) == NULL)
+    {
+        pr_err("cannot create the struct class\n");
+        goto r_class;
+    }
+    hgd_class->dev_uevent = hgd_lcd_uevent;
+
+    /*Creating device*/
+    if ((device_create(hgd_class, NULL, hgd_dev, NULL, HGD_DRIVER_NAME)) == NULL)
+    {
+        pr_err("cannot create the Device \n");
+        goto r_device;
+    }
+
     if(gpio_rw > -1)
     {
         pr_info("read mode enabled");
@@ -127,7 +215,6 @@ static int __init hgd_lcd_init(void)
         && gpio_db7 > -1
       )
     {
-        pr_info("8 bit data transfer");
         data_mode_8_bit = true;
     }
     else  if(
@@ -141,7 +228,6 @@ static int __init hgd_lcd_init(void)
         && gpio_db7 > -1
       )
     {
-         pr_info("4 bit data transfer");
         data_mode_8_bit = false;
     }
     else
@@ -187,7 +273,18 @@ static int __init hgd_lcd_init(void)
     hgd_lcd_send_data('a');
     hgd_lcd_send_data('o');
     return 0;
+
+r_device:
+    device_destroy(hgd_class, hgd_dev);
+r_class:
+    class_destroy(hgd_class);
+r_dev:
+    cdev_del(&hgd_cdev);
+r_unreg:
+    unregister_chrdev_region(hgd_dev, 1);
+    return -ENXIO;
 }
+module_init(hgd_lcd_init);
 
 /*
 * Module exit function
@@ -214,6 +311,7 @@ static void __exit hgd_lcd_exit(void)
     gpio_free(gpio_db7);
     pr_info("exit");
 }
+module_exit(hgd_lcd_exit);
 
 bool hgd_lcd_init_8_bit(void)
 {
@@ -317,9 +415,73 @@ static void hgd_lcd_send_command(__u8 command)
     hgd_lcd_send_byte(command, 0);
 }
 
-module_init(hgd_lcd_init);
-module_exit(hgd_lcd_exit);
+int hgd_lcd_open(struct inode *inode, struct file *file)
+{
+    if (atomic_read(&device_busy) > 0)
+    {
+        pr_err("device busy");
+        return -EBUSY;
+    }
 
+    atomic_inc(&device_busy);
+
+    pr_info("Device open:%u\n", atomic_read(&device_busy));
+    return 0;
+}
+
+int hgd_lcd_release(struct inode *inode, struct file *file)
+{
+    atomic_sub(1, &device_busy);
+
+    pr_info("Device release:%u\n", atomic_read(&device_busy));
+    return 0;
+}
+
+ssize_t hgd_lcd_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
+{
+    char msg[READ_BUFF_LEN] = { [ 0 ... READ_BUFF_LEN - 1] = '\0'};
+
+    __u32 msg_len = sprintf(msg,
+                            "ciao");
+
+    pr_info("%s", msg);
+
+    if (len > msg_len)
+    {
+        len = msg_len;
+    }
+
+    return simple_read_from_buffer(buff, len, off, msg, msg_len);
+}
+
+ssize_t hgd_lcd_write(struct file *filp, const char *buff, size_t len, loff_t *off)
+{
+    char *data = (char *)kmalloc(len, GFP_KERNEL);
+    if (data == NULL)
+    {
+        return -ENOMEM;
+    }
+    memset(data, '\0', len);
+
+    if (copy_from_user(data, buff, len) != 0)
+    {
+        kfree(data);
+        return -EINVAL;
+    }
+
+    pr_devel("user data:%.*s", (int)len, data);
+
+    hgd_lcd_send_str(data, len);
+
+    kfree(data);
+    return 0;
+}
+
+int hgd_lcd_uevent(struct device *dev, struct kobj_uevent_env *env)
+{
+    add_uevent_var(env, "DEVMODE=%#o", 0666);
+    return 0;
+}
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
