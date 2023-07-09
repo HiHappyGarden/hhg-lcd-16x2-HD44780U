@@ -153,7 +153,7 @@ bool hhg_lcd_init_4_bit(void)
     gpio_request_one(gpio_db6, GPIOF_OUT_INIT_LOW, "DB6");
     gpio_request_one(gpio_db7, GPIOF_OUT_INIT_LOW, "DB7");
 
-
+    //TODO: init procedure
 
     return 0;
 }
@@ -163,25 +163,25 @@ bool hhg_lcd_init_4_bit(void)
 void hhg_lcd_send_byte(__u8 byte, __u8 mode)
 {
 
-
+    //TODO: send byte
     msleep(1);
 }
 
 void hhg_lcd_send_command(__u8 command)
 {
-
+    //TODO: send command
 }
 
 
 void hhg_lcd_send_data(__u8 data)
 {
-
+    //TODO: send data
 }
 EXPORT_SYMBOL(hhg_lcd_send_data);
 
 void hhg_lcd_send_str(const char* str, __u16 len)
 {
-
+    //TODO: send string
 }
 EXPORT_SYMBOL(hhg_lcd_send_str);
 
