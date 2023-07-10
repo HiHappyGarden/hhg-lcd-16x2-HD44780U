@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "kernel.h": "c",
-        "module.h": "c",
-        "sysinfo.h": "c",
-        "const.h": "c"
-    }
-}
