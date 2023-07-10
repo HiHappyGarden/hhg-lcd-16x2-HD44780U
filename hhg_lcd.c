@@ -32,14 +32,12 @@
 #define pr_fmt(fmt) "hhg_lcd: " fmt
 #endif
 
-#define HGD_IS_VALID(gpio, msg) \
+#define HHG_IS_VALID(gpio, msg) \
 if (!gpio_is_valid(gpio)) \
 { \
     pr_err("GPIO " msg " wrong pin:%d", gpio); \
     return -EINVAL; \
 } 
-
-#define HGD_DRIVER_NAME "hhg_lcd"
 
 #define READ_BUFF_LEN (256)
 
@@ -59,6 +57,17 @@ static short gpio_db4  = -1;
 static short gpio_db5  = -1;
 static short gpio_db6  = -1;
 static short gpio_db7  = -1;
+static short gpio_db[]  = {
+    [0] = -1,
+    [1] = -1,
+    [2] = -1,
+    [3] = -1,
+    [4] = -1,
+    [5] = -1,
+    [6] = -1,
+    [7] = -1,
+    NULL
+};
 
 
 // static decl
@@ -101,18 +110,29 @@ static void hhg_lcd_send_command(__u8 command);
 
 bool hhg_lcd_init_8_bit(void)
 {
-    pr_info("init 8 bit data mode done gpio_rs:%d gpio_rw:%d gpio_en:%d gpio_db0:%d gpio_db1:%d gpio_db2:%d gpio_db3:%d gpio_db4:%d gpio_db5:%d gpio_db6:%d gpio_db7:%d"
-        , gpio_rs
-        , gpio_rw
-        , gpio_en
-        , gpio_db0
-        , gpio_db1
-        , gpio_db2
-        , gpio_db3
-        , gpio_db4
-        , gpio_db5
-        , gpio_db6
-        , gpio_db7
+    pr_info("init 8 bit data mode done"
+    " gpio_rs:%d"
+    " gpio_rw:%d"
+    " gpio_en:%d"
+    " gpio_db0:%d"
+    " gpio_db1:%d"
+    " gpio_db2:%d"
+    " gpio_db3:%d"
+    " gpio_db4:%d"
+    " gpio_db5:%d"
+    " gpio_db6:%d"
+    " gpio_db7:%d"
+    , gpio_rs
+    , gpio_rw
+    , gpio_en
+    , gpio_db0
+    , gpio_db1
+    , gpio_db2
+    , gpio_db3
+    , gpio_db4
+    , gpio_db5
+    , gpio_db6
+    , gpio_db7
     );
 
     return false;
@@ -121,26 +141,33 @@ bool hhg_lcd_init_8_bit(void)
 bool hhg_lcd_init_4_bit(void)
 {
 
-    pr_info("init 4 bit data mode done gpio_rs:%d gpio_rw:%d gpio_en:%d gpio_db4:%d gpio_db5:%d gpio_db6:%d gpio_db7:%d"
-        , gpio_rs
-        , gpio_rw
-        , gpio_en
-        , gpio_db4
-        , gpio_db5
-        , gpio_db6
-        , gpio_db7
+    pr_info("init 4 bit data mode done"
+    " gpio_rs:%d"
+    " gpio_rw:%d"
+    " gpio_en:%d"
+    " gpio_db4:%d"
+    " gpio_db5:%d"
+    " gpio_db6:%d"
+    " gpio_db7:%d"
+    , gpio_rs
+    , gpio_rw
+    , gpio_en
+    , gpio_db4
+    , gpio_db5
+    , gpio_db6
+    , gpio_db7
     );
 
-    HGD_IS_VALID(gpio_rs, "RS")
+    HHG_IS_VALID(gpio_rs, "RS")
     if(gpio_rw > -1)
     {
-        HGD_IS_VALID(gpio_rw, "RW")
+        HHG_IS_VALID(gpio_rw, "RW")
     }
-    HGD_IS_VALID(gpio_en, "EN")
-    HGD_IS_VALID(gpio_db4, "DB4")
-    HGD_IS_VALID(gpio_db5, "DB5")
-    HGD_IS_VALID(gpio_db6, "DB6")
-    HGD_IS_VALID(gpio_db7, "DB7")
+    HHG_IS_VALID(gpio_en, "EN")
+    HHG_IS_VALID(gpio_db4, "DB4")
+    HHG_IS_VALID(gpio_db5, "DB5")
+    HHG_IS_VALID(gpio_db6, "DB6")
+    HHG_IS_VALID(gpio_db7, "DB7")
     
     gpio_request_one(gpio_rs, GPIOF_OUT_INIT_LOW, "RS");
     if(gpio_rw > -1)
@@ -297,7 +324,6 @@ static struct file_operations fops = {
     .read = hhg_lcd_fops_read,
     .write = hhg_lcd_fops_write,
     .open = hhg_lcd_fops_open,
-    // .unlocked_ioctl = hhg_button_ioctl,
     .release = hhg_lcd_fops_release
 };
 
@@ -308,7 +334,7 @@ static struct file_operations fops = {
 static int __init hhg_lcd_init(void)
 {
     /*Allocating Major number*/
-    if ((alloc_chrdev_region(&hhg_dev, 0, 1, "hhg_Dev")) < 0)
+    if ((alloc_chrdev_region(&hhg_dev, HHG_MAJOR_NUM_START, HHG_MINOR_NUM_COUNT, HHG_DRIVER_NAME)) < 0)
     {
         pr_err("cannot allocate major number\n");
         goto r_unreg;
@@ -326,7 +352,7 @@ static int __init hhg_lcd_init(void)
     }
 
     /*Creating struct class*/
-    if ((hhg_class = class_create(THIS_MODULE, "hhg_class")) == NULL)
+    if ((hhg_class = class_create(THIS_MODULE, HHG_CLASS_NAME)) == NULL)
     {
         pr_err("cannot create the struct class\n");
         goto r_class;
@@ -334,80 +360,80 @@ static int __init hhg_lcd_init(void)
     hhg_class->dev_uevent = hhg_lcd_uevent;
 
     /*Creating device*/
-    if ((device_create(hhg_class, NULL, hhg_dev, NULL, HGD_DRIVER_NAME)) == NULL)
+    if ((device_create(hhg_class, NULL, hhg_dev, NULL, HHG_DRIVER_NAME)) == NULL)
     {
         pr_err("cannot create the Device \n");
         goto r_device;
     }
 
-    if(gpio_rw > -1)
-    {
-        pr_info("read mode enabled");
-        enable_read_mode = true;
-    }
+    // if(gpio_rw > -1)
+    // {
+    //     pr_info("read mode enabled");
+    //     enable_read_mode = true;
+    // }
 
-    if(
-        gpio_db0 > -1
-        && gpio_db1 > -1
-        && gpio_db2 > -1
-        && gpio_db3 > -1
-        && gpio_db4 > -1
-        && gpio_db5 > -1
-        && gpio_db6 > -1
-        && gpio_db7 > -1
-      )
-    {
-        data_mode_8_bit = true;
-    }
-    else  if(
-        gpio_db0 == -1
-        && gpio_db1 == -1
-        && gpio_db2 == -1
-        && gpio_db3 == -1
-        && gpio_db4 > -1
-        && gpio_db5 > -1
-        && gpio_db6 > -1
-        && gpio_db7 > -1
-      )
-    {
-        data_mode_8_bit = false;
-    }
-    else
-    {
-        pr_err("number of configured pins not suitable for 4-bit or 8-bit configuration");
-        return -EINVAL;
-    }
+    // if(
+    //     gpio_db0 > -1
+    //     && gpio_db1 > -1
+    //     && gpio_db2 > -1
+    //     && gpio_db3 > -1
+    //     && gpio_db4 > -1
+    //     && gpio_db5 > -1
+    //     && gpio_db6 > -1
+    //     && gpio_db7 > -1
+    //   )
+    // {
+    //     data_mode_8_bit = true;
+    // }
+    // else  if(
+    //     gpio_db0 == -1
+    //     && gpio_db1 == -1
+    //     && gpio_db2 == -1
+    //     && gpio_db3 == -1
+    //     && gpio_db4 > -1
+    //     && gpio_db5 > -1
+    //     && gpio_db6 > -1
+    //     && gpio_db7 > -1
+    //   )
+    // {
+    //     data_mode_8_bit = false;
+    // }
+    // else
+    // {
+    //     pr_err("number of configured pins not suitable for 4-bit or 8-bit configuration");
+    //     return -EINVAL;
+    // }
 
-    if(gpio_rs == -1)
-    {
-        pr_err("GPIO RS mandatory");
-        return -EINVAL;
-    }
+    // if(gpio_rs == -1)
+    // {
+    //     pr_err("GPIO RS mandatory");
+    //     return -EINVAL;
+    // }
 
-    if(gpio_en == -1)
-    {
-        pr_err("GPIO RS mandatory");
-        return -EINVAL;
-    }
+    // if(gpio_en == -1)
+    // {
+    //     pr_err("GPIO RS mandatory");
+    //     return -EINVAL;
+    // }
 
-    if(data_mode_8_bit)
-    {
-        //init 8 bit
-        if(hhg_lcd_init_8_bit())
-        {
-            pr_err("Init 4 bit data error");
-            return -ENOEXEC;
-        }
-    }
-    else
-    {
-        //init 4 bit
-        if(hhg_lcd_init_4_bit())
-        {
-            pr_err("Init 4 bit data error");
-            return -ENOEXEC;
-        }
-    }
+    // if(data_mode_8_bit)
+    // {
+    //     //init 8 bit
+    //     if(hhg_lcd_init_8_bit())
+    //     {
+    //         pr_err("Init 4 bit data error");
+    //         return -ENOEXEC;
+    //     }
+    // }
+    // else
+    // {
+    //     //init 4 bit
+    //     if(hhg_lcd_init_4_bit())
+    //     {
+    //         pr_err("Init 4 bit data error");
+    //         return -ENOEXEC;
+    //     }
+    // }
 
     return 0;
 
@@ -429,23 +455,28 @@ module_init(hhg_lcd_init);
 static void __exit hhg_lcd_exit(void)
 {
 
-    gpio_free(gpio_rs);
-    if(gpio_rw > -1)
-    {
-        gpio_free(gpio_rw);
-    }
-    gpio_free(gpio_en);
-    if(data_mode_8_bit)
-    {
-        gpio_free(gpio_db0);
-        gpio_free(gpio_db1);
-        gpio_free(gpio_db2);
-        gpio_free(gpio_db3);
-    }
-    gpio_free(gpio_db4);
-    gpio_free(gpio_db5);
-    gpio_free(gpio_db6);
-    gpio_free(gpio_db7);
+    // gpio_free(gpio_rs);
+    // if(gpio_rw > -1)
+    // {
+    //     gpio_free(gpio_rw);
+    // }
+    // gpio_free(gpio_en);
+    // if(data_mode_8_bit)
+    // {
+    //     gpio_free(gpio_db0);
+    //     gpio_free(gpio_db1);
+    //     gpio_free(gpio_db2);
+    //     gpio_free(gpio_db3);
+    // }
+    // gpio_free(gpio_db4);
+    // gpio_free(gpio_db5);
+    // gpio_free(gpio_db6);
+    // gpio_free(gpio_db7);
+
+    device_destroy(hhg_class, hhg_dev);
+    class_destroy(hhg_class);
+    cdev_del(&hhg_cdev);
+    unregister_chrdev_region(hhg_dev, 1);
     pr_info("exit");
 }
 module_exit(hhg_lcd_exit);
@@ -520,6 +551,6 @@ int hhg_lcd_uevent(struct device *dev, struct kobj_uevent_env *env)
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
-MODULE_DESCRIPTION("Happy GardenPi driver to get access to hardware resources");
+MODULE_DESCRIPTION("Driver for LCD 16x2 management with chip HITACHI HD44780U compatible.");
 MODULE_INFO(intree, "Y");
 MODULE_VERSION("0.80.0");

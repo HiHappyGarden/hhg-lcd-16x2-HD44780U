@@ -22,6 +22,12 @@
 
 #include <linux/types.h>
 
+#define HHG_DRIVER_NAME "hhg_lcd"
+#define HHG_CLASS_NAME "hhg_lcd"
+#define HHG_MAJOR_NUM_START (0)
+#define HHG_MINOR_NUM_COUNT (1)
+
+
 /**
  * @brief Sends data to the LCD.
  *

@@ -1,6 +1,6 @@
-program_name = cdev
+program_name = hhg_lcd
 
-obj-m += hhg_lcd.o 
+obj-m += $(program_name).o 
 
 ccflags-y := -std=gnu11 -Wno-declaration-after-statement
 EXTRA_CFLAGS:= -D TEST=1
@@ -15,7 +15,7 @@ clean:
 
 # Utilities for fast testing ...
 insert:
-	sudo insmod $(program_name).ko	# insert $ make i
+	sudo insmod $(program_name).ko	 gpio_rs=25 gpio_en=24 gpio_db4=23 gpio_db5=22 gpio_db6=21 gpio_db7=14 # insert $ make i
 remove:
 	sudo rmmod $(program_name)		# remove $ make r
 print:
