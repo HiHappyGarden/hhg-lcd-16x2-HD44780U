@@ -1,4 +1,6 @@
 # happy-gardenpi-driver
-Driver to get access to hardware resources
+Simple driver for LCD 16x2 management with chip HITACHI HD44780U compatible.
 
-https://www.sparkfun.com/datasheets/LCD/HD44780.pdf
+## Documentation reference
+ * [HITACHI HD44780U](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf)
+
