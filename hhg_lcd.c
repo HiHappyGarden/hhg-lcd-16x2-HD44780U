@@ -39,8 +39,6 @@ if (!gpio_is_valid(gpio)) \
     return -EINVAL; \
 } 
 
-#define READ_BUFF_LEN (256)
-
 //LCD MANAGEMENT
 
 static bool data_mode_8_bit = false;
@@ -57,18 +55,9 @@ static short gpio_db4  = -1;
 static short gpio_db5  = -1;
 static short gpio_db6  = -1;
 static short gpio_db7  = -1;
-static short gpio_db[]  = {
-    [0] = -1,
-    [1] = -1,
-    [2] = -1,
-    [3] = -1,
-    [4] = -1,
-    [5] = -1,
-    [6] = -1,
-    [7] = -1,
-    NULL
-};
 
+
+static char msg_to_display[HHG_ROWS * HHG_COLS + 1 ] = { [ 0 ... (HHG_ROWS * HHG_COLS) ] = 0};
 
 // static decl
 /**
@@ -505,42 +494,31 @@ int hhg_lcd_fops_release(struct inode *inode, struct file *file)
 
 ssize_t hhg_lcd_fops_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
 {
-    char msg[READ_BUFF_LEN] = { [ 0 ... READ_BUFF_LEN - 1] = '\0'};
-
-    __u32 msg_len = sprintf(msg,
-                            "ciao");
-
-    pr_info("%s", msg);
-
-    if (len > msg_len)
-    {
-        len = msg_len;
-    }
-
-    return simple_read_from_buffer(buff, len, off, msg, msg_len);
+    return simple_read_from_buffer(buff, len, off, msg_to_display, strlen(msg_to_display));
 }
 
 ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
-    char *data = (char *)kmalloc(len, GFP_KERNEL);
-    if (data == NULL)
+
+    size_t bytes_to_write = 0;
+
+    memset(msg_to_display, '\0', sizeof(msg_to_display));
+    if(len > sizeof(msg_to_display) - 1)
     {
-        return -ENOMEM;
+        bytes_to_write = sizeof(msg_to_display) - 1;
     }
-    memset(data, '\0', len);
-
-    if (copy_from_user(data, buff, len) != 0)
+    else
     {
-        kfree(data);
-        return -EINVAL;
+        bytes_to_write = len;
     }
-
-    pr_devel("user data:%.*s", (int)len, data);
-
-    hhg_lcd_send_str(data, len);
-
-    kfree(data);
-    return 0;
+    
+    ssize_t not_written = len - simple_write_to_buffer(msg_to_display, sizeof(msg_to_display) - 1, off, buff, len);
+    if(not_written > 0)
+    {
+        pr_warn("not written all data, exceed for: %u char", not_written);
+    }
+    
+    return len;
 }
 
 int hhg_lcd_uevent(struct device *dev, struct kobj_uevent_env *env)

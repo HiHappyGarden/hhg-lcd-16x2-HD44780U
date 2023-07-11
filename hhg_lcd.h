@@ -27,6 +27,8 @@
 #define HHG_MAJOR_NUM_START (0)
 #define HHG_MINOR_NUM_COUNT (1)
 
+#define HHG_ROWS (2)
+#define HHG_COLS (16)
 
 /**
  * @brief Sends data to the LCD.
