@@ -30,6 +30,10 @@
 #define HHG_ROWS (2)
 #define HHG_COLS (16)
 
+
+#define HHG_COMMAND_MODE (0)
+#define HHG_DATA_MODE (1)
+
 /**
  * @brief Sends data to the LCD.
  *

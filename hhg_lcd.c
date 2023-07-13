@@ -60,6 +60,16 @@ static short gpio_db7  = -1;
 static char msg_to_display[HHG_ROWS * HHG_COLS + 1 ] = { [ 0 ... (HHG_ROWS * HHG_COLS) ] = 0};
 
 // static decl
+
+/**
+ * @brief Initializes the LCD in 8-bit mode.
+ *
+ * This function initializes the LCD in 8-bit mode.
+ *
+ * @return `true` if the initialization was successful, `false` otherwise.
+ */
+static bool hhg_lcd_init(void);
+
 /**
  * @brief Initializes the LCD in 8-bit mode.
  *
@@ -79,14 +89,21 @@ static bool hhg_lcd_init_8_bit(void);
 static bool hhg_lcd_init_4_bit(void);
 
 /**
+ * @brief Initializes the LCD in 4-bit mode.
+ * 
+ */
+static void hhg_lcd_free(void);
+
+/**
  * @brief Sends one byte of data to the LCD.
  *
  * This function sends one byte of data to the LCD.
  *
  * @param byte The byte of data to be sent.
- * @param mode The mode of operation (data or command).
+ * @param mode The mode 8bit (data or command).
  */
-static void hhg_lcd_send_byte(__u8 byte, __u8 mode);
+static void hhg_lcd_send_byte(u8 byte, u8 mode_8bit);
+
 
 /**
  * @brief Sends a command to the LCD.
@@ -95,7 +112,82 @@ static void hhg_lcd_send_byte(__u8 byte, __u8 mode);
  *
  * @param command The command to be sent.
  */
-static void hhg_lcd_send_command(__u8 command);
+static void hhg_lcd_send_command(u8 command);
+
+
+bool hhg_lcd_init(void)
+{
+    if(gpio_rw > -1)
+    {
+        pr_info("read mode enabled");
+        enable_read_mode = true;
+    }
+
+    if(
+        gpio_db0 > -1
+        && gpio_db1 > -1
+        && gpio_db2 > -1
+        && gpio_db3 > -1
+        && gpio_db4 > -1
+        && gpio_db5 > -1
+        && gpio_db6 > -1
+        && gpio_db7 > -1
+      )
+    {
+        data_mode_8_bit = true;
+    }
+    else  if(
+        gpio_db0 == -1
+        && gpio_db1 == -1
+        && gpio_db2 == -1
+        && gpio_db3 == -1
+        && gpio_db4 > -1
+        && gpio_db5 > -1
+        && gpio_db6 > -1
+        && gpio_db7 > -1
+      )
+    {
+        data_mode_8_bit = false;
+    }
+    else
+    {
+        pr_err("number of configured pins not suitable for 4-bit or 8-bit configuration");
+        return false;
+    }
+
+    if(gpio_rs == -1)
+    {
+        pr_err("GPIO RS mandatory");
+        return false;
+    }
+
+    if(gpio_en == -1)
+    {
+        pr_err("GPIO RS mandatory");
+        return false;
+    }
+
+    if(data_mode_8_bit)
+    {
+        //init 8 bit
+        if(!hhg_lcd_init_8_bit())
+        {
+            pr_err("Init 4 bit data error");
+            return false;
+        }
+    }
+    else
+    {
+        //init 4 bit
+        if(!hhg_lcd_init_4_bit())
+        {
+            pr_err("Init 4 bit data error");
+            return false;
+        }
+    }
+
+    return true;
+}
 
 bool hhg_lcd_init_8_bit(void)
 {
@@ -171,25 +263,118 @@ bool hhg_lcd_init_4_bit(void)
 
     //TODO: init procedure
 
-    return 0;
+    usleep_range(41*1000, 51*1000);
+
+    hhg_lcd_send_command(0x30);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x30);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x30);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x20);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x20);
+    hhg_lcd_send_command(0x20);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x00);
+    hhg_lcd_send_command(0xE0);
+    
+    usleep_range(41*1000, 51*1000);
+
+    hhg_lcd_send_command(0x00);
+    hhg_lcd_send_command(0x60);
+    usleep_range(100, 200);
+    hhg_lcd_send_command(0x80);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x00);
+    hhg_lcd_send_command(0x60);
+    usleep_range(100, 200);
+
+    hhg_lcd_send_command(0x00);
+    hhg_lcd_send_command(0xF0);
+    usleep_range(100, 200);
+
+    return true;
 }
 
+static void hhg_lcd_free(void)
+{
+    gpio_free(gpio_rs);
+    if(gpio_rw > -1)
+    {
+        gpio_free(gpio_rw);
+    }
+    gpio_free(gpio_en);
+    if(data_mode_8_bit)
+    {
+        gpio_free(gpio_db0);
+        gpio_free(gpio_db1);
+        gpio_free(gpio_db2);
+        gpio_free(gpio_db3);
+    }
+    gpio_free(gpio_db4);
+    gpio_free(gpio_db5);
+    gpio_free(gpio_db6);
+    gpio_free(gpio_db7);
+}
 
-
-void hhg_lcd_send_byte(__u8 byte, __u8 mode)
+void hhg_lcd_send_byte(u8 byte, u8 mode_8bit)
 {
 
-    //TODO: send byte
-    msleep(1);
+    gpio_set_value(gpio_db4, (byte >> 4 ) & 0x01);
+    gpio_set_value(gpio_db5, (byte >> 5 ) & 0x01);
+    gpio_set_value(gpio_db6, (byte >> 6 ) & 0x01);
+    gpio_set_value(gpio_db7, (byte >> 7 ) & 0x01);
+
+    pr_info("hhg_lcd_send_byte: "
+    " db4:%d"
+    " db5:%d"
+    " db6:%d"
+    " db7:%d"
+    , (byte >> 4 ) & 0x01
+    , (byte >> 5 ) & 0x01
+    , (byte >> 6 ) & 0x01
+    , (byte >> 7 ) & 0x01
+    ); 
+
+    gpio_set_value(gpio_rs, HHG_COMMAND_MODE);
+    usleep_range(5, 10);
+
+    
+    
 }
 
-void hhg_lcd_send_command(__u8 command)
+
+void hhg_lcd_send_command(u8 command)
 {
-    //TODO: send command
+    gpio_set_value(gpio_db4, (command >> 4 ) & 0x01);
+    gpio_set_value(gpio_db5, (command >> 5 ) & 0x01);
+    gpio_set_value(gpio_db6, (command >> 6 ) & 0x01);
+    gpio_set_value(gpio_db7, (command >> 7 ) & 0x01);
+
+    pr_info("hhg_lcd_send_command: "
+    " db4:%d"
+    " db5:%d"
+    " db6:%d"
+    " db7:%d"
+    , (command >> 4 ) & 0x01
+    , (command >> 5 ) & 0x01
+    , (command >> 6 ) & 0x01
+    , (command >> 7 ) & 0x01
+    ); 
+
+    gpio_set_value(gpio_rs, HHG_COMMAND_MODE);
+    usleep_range(5, 10);
 }
 
 
-void hhg_lcd_send_data(__u8 data)
+void hhg_lcd_send_data(u8 data)
 {
     //TODO: send data
 }
@@ -320,7 +505,7 @@ static struct file_operations fops = {
 /*
 * Module Init function
 */
-static int __init hhg_lcd_init(void)
+static int __init hhg_lcd_module_init(void)
 {
     /*Allocating Major number*/
     if ((alloc_chrdev_region(&hhg_dev, HHG_MAJOR_NUM_START, HHG_MINOR_NUM_COUNT, HHG_DRIVER_NAME)) < 0)
@@ -355,74 +540,11 @@ static int __init hhg_lcd_init(void)
         goto r_device;
     }
 
-    // if(gpio_rw > -1)
-    // {
-    //     pr_info("read mode enabled");
-    //     enable_read_mode = true;
-    // }
-
-    // if(
-    //     gpio_db0 > -1
-    //     && gpio_db1 > -1
-    //     && gpio_db2 > -1
-    //     && gpio_db3 > -1
-    //     && gpio_db4 > -1
-    //     && gpio_db5 > -1
-    //     && gpio_db6 > -1
-    //     && gpio_db7 > -1
-    //   )
-    // {
-    //     data_mode_8_bit = true;
-    // }
-    // else  if(
-    //     gpio_db0 == -1
-    //     && gpio_db1 == -1
-    //     && gpio_db2 == -1
-    //     && gpio_db3 == -1
-    //     && gpio_db4 > -1
-    //     && gpio_db5 > -1
-    //     && gpio_db6 > -1
-    //     && gpio_db7 > -1
-    //   )
-    // {
-    //     data_mode_8_bit = false;
-    // }
-    // else
-    // {
-    //     pr_err("number of configured pins not suitable for 4-bit or 8-bit configuration");
-    //     return -EINVAL;
-    // }
-
-    // if(gpio_rs == -1)
-    // {
-    //     pr_err("GPIO RS mandatory");
-    //     return -EINVAL;
-    // }
-
-    // if(gpio_en == -1)
-    // {
-    //     pr_err("GPIO RS mandatory");
-    //     return -EINVAL;
-    // }
-
-    // if(data_mode_8_bit)
-    // {
-    //     //init 8 bit
-    //     if(hhg_lcd_init_8_bit())
-    //     {
-    //         pr_err("Init 4 bit data error");
-    //         return -ENOEXEC;
-    //     }
-    // }
-    // else
-    // {
-    //     //init 4 bit
-    //     if(hhg_lcd_init_4_bit())
-    //     {
-    //         pr_err("Init 4 bit data error");
-    //         return -ENOEXEC;
-    //     }
-    // }
+    if(!hhg_lcd_init())
+    {
+        pr_err("cannot init LCD\n");
+        goto r_device;
+    }
 
     return 0;
 
@@ -436,39 +558,22 @@ r_unreg:
     unregister_chrdev_region(hhg_dev, 1);
     return -ENXIO;
 }
-module_init(hhg_lcd_init);
+module_init(hhg_lcd_module_init);
 
 /*
 * Module exit function
 */
-static void __exit hhg_lcd_exit(void)
+static void __exit hhg_lcd_module_exit(void)
 {
 
-    // gpio_free(gpio_rs);
-    // if(gpio_rw > -1)
-    // {
-    //     gpio_free(gpio_rw);
-    // }
-    // gpio_free(gpio_en);
-    // if(data_mode_8_bit)
-    // {
-    //     gpio_free(gpio_db0);
-    //     gpio_free(gpio_db1);
-    //     gpio_free(gpio_db2);
-    //     gpio_free(gpio_db3);
-    // }
-    // gpio_free(gpio_db4);
-    // gpio_free(gpio_db5);
-    // gpio_free(gpio_db6);
-    // gpio_free(gpio_db7);
-
+    hhg_lcd_free();
     device_destroy(hhg_class, hhg_dev);
     class_destroy(hhg_class);
     cdev_del(&hhg_cdev);
     unregister_chrdev_region(hhg_dev, 1);
     pr_info("exit");
 }
-module_exit(hhg_lcd_exit);
+module_exit(hhg_lcd_module_exit);
 
 int hhg_lcd_fops_open(struct inode *inode, struct file *file)
 {
@@ -515,7 +620,7 @@ ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff
     ssize_t not_written = len - simple_write_to_buffer(msg_to_display, sizeof(msg_to_display) - 1, off, buff, len);
     if(not_written > 0)
     {
-        pr_warn("not written all data, exceed for: %u char", not_written);
+        pr_warn("not written all data exceed for: %ld char", not_written);
     }
     
     return len;
