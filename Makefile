@@ -15,7 +15,7 @@ clean:
 
 # Utilities for fast testing ...
 insert:
-	sudo insmod $(program_name).ko	 gpio_rs=25 gpio_en=24 gpio_db4=23 gpio_db5=22 gpio_db6=21 gpio_db7=14 # insert $ make i
+	sudo insmod $(program_name).ko	 gpio_rs=26 gpio_en=19 gpio_db4=13 gpio_db5=6 gpio_db6=5 gpio_db7=11 # insert $ make i
 remove:
 	sudo rmmod $(program_name)		# remove $ make r
 print:

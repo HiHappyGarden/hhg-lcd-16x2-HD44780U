@@ -114,6 +114,37 @@ static void hhg_lcd_send_byte(u8 byte, u8 mode_8bit);
  */
 static void hhg_lcd_send_command(u8 command);
 
+static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
+{
+	u8 ret;
+
+	// request GPIO allocation
+	ret = gpio_request( gpio_number, "GPIO request");
+	if( ret != 0 )	{
+		pr_err("failed to request GPIO %d \n", gpio_number );
+		return ret;
+	}	
+	
+	// set GPIO pin export (also disallow user space to change GPIO direction)
+	ret = gpio_export( gpio_number, 0);
+	if( ret != 0 )	{
+		pr_err("failed to export GPIO %d \n", gpio_number );
+		return ret;
+	}
+
+	// set GPIO pin direction
+	ret = gpio_direction_output( gpio_number, gpio_direction);
+	if( ret != 0 )	{
+		pr_err("failed to set GPIO direction %d \n", gpio_number );	
+		return ret;
+	}
+
+	// set GPIO pin default value
+	gpio_set_value(gpio_number, 0);
+
+	// return value when there is no error
+	return 0; 
+}
 
 bool hhg_lcd_init(void)
 {
@@ -239,66 +270,79 @@ bool hhg_lcd_init_4_bit(void)
     , gpio_db7
     );
 
-    HHG_IS_VALID(gpio_rs, "RS")
-    if(gpio_rw > -1)
-    {
-        HHG_IS_VALID(gpio_rw, "RW")
-    }
-    HHG_IS_VALID(gpio_en, "EN")
-    HHG_IS_VALID(gpio_db4, "DB4")
-    HHG_IS_VALID(gpio_db5, "DB5")
-    HHG_IS_VALID(gpio_db6, "DB6")
-    HHG_IS_VALID(gpio_db7, "DB7")
+    // HHG_IS_VALID(gpio_rs, "RS")
+    // if(gpio_rw > -1)
+    // {
+    //     HHG_IS_VALID(gpio_rw, "RW")
+    // }
+    // HHG_IS_VALID(gpio_en, "EN")
+    // HHG_IS_VALID(gpio_db4, "DB4")
+    // HHG_IS_VALID(gpio_db5, "DB5")
+    // HHG_IS_VALID(gpio_db6, "DB6")
+    // HHG_IS_VALID(gpio_db7, "DB7")
     
-    gpio_request_one(gpio_rs, GPIOF_OUT_INIT_LOW, "RS");
-    if(gpio_rw > -1)
-    {
-        gpio_request_one(gpio_rw, GPIOF_OUT_INIT_LOW, "RW");
-    }
-    gpio_request_one(gpio_en, GPIOF_OUT_INIT_LOW, "EN");
-    gpio_request_one(gpio_db4, GPIOF_OUT_INIT_LOW, "DB4");
-    gpio_request_one(gpio_db5, GPIOF_OUT_INIT_LOW, "DB5");
-    gpio_request_one(gpio_db6, GPIOF_OUT_INIT_LOW, "DB6");
-    gpio_request_one(gpio_db7, GPIOF_OUT_INIT_LOW, "DB7");
+
+    hhg_lcd_pin_setup(gpio_rs, 0);
+    hhg_lcd_pin_setup(gpio_en, 0);
+    hhg_lcd_pin_setup(gpio_db4, 0);
+    hhg_lcd_pin_setup(gpio_db5, 0);
+    hhg_lcd_pin_setup(gpio_db6, 0);
+    hhg_lcd_pin_setup(gpio_db7, 0);
+
+    
+    // gpio_request_one(gpio_rs, GPIOF_OUT_INIT_LOW, "RS");
+    // if(gpio_rw > -1)
+    // {
+    //     gpio_request_one(gpio_rw, GPIOF_OUT_INIT_LOW, "RW");
+    // }
+    // gpio_request_one(gpio_en, GPIOF_OUT_INIT_LOW, "EN");
+    // gpio_request_one(gpio_db4, GPIOF_OUT_INIT_LOW, "DB4");
+    // gpio_request_one(gpio_db5, GPIOF_OUT_INIT_LOW, "DB5");
+    // gpio_request_one(gpio_db6, GPIOF_OUT_INIT_LOW, "DB6");
+    // gpio_request_one(gpio_db7, GPIOF_OUT_INIT_LOW, "DB7");
 
     //TODO: init procedure
 
     usleep_range(41*1000, 51*1000);
-
-    hhg_lcd_send_command(0x30);
-    usleep_range(100, 200);
-
-    hhg_lcd_send_command(0x30);
-    usleep_range(100, 200);
-
-    hhg_lcd_send_command(0x30);
-    usleep_range(100, 200);
-
+    hhg_lcd_send_command(0x00);
+    usleep_range(41*1000, 51*1000);
+    
+    
     hhg_lcd_send_command(0x20);
     usleep_range(100, 200);
 
     hhg_lcd_send_command(0x20);
-    hhg_lcd_send_command(0x20);
+    usleep_range(100, 200);
+    hhg_lcd_send_command(0x00);
     usleep_range(100, 200);
 
     hhg_lcd_send_command(0x00);
+    usleep_range(100, 200);
     hhg_lcd_send_command(0xE0);
     
     usleep_range(41*1000, 51*1000);
 
     hhg_lcd_send_command(0x00);
+    usleep_range(100, 200);
     hhg_lcd_send_command(0x60);
     usleep_range(100, 200);
     hhg_lcd_send_command(0x80);
     usleep_range(100, 200);
 
     hhg_lcd_send_command(0x00);
+    usleep_range(100, 200);
     hhg_lcd_send_command(0x60);
     usleep_range(100, 200);
 
     hhg_lcd_send_command(0x00);
+    usleep_range(100, 200);
     hhg_lcd_send_command(0xF0);
     usleep_range(100, 200);
+
+
+    hhg_lcd_send_byte(0x40, false);
+    usleep_range(100, 200);
+    hhg_lcd_send_byte(0x80, false);
 
     return true;
 }
