@@ -94,6 +94,17 @@ static bool hhg_lcd_init_4_bit(void);
  */
 static void hhg_lcd_free(void);
 
+
+/**
+ * @brief Sends one nibble of data to the LCD.
+ *
+ * This function sends one nibble of data to the LCD.
+ *
+ * @param byte The nibble of data to be sent.
+ */
+static void hhg_lcd_send_nibble(u8 byte);
+
+
 /**
  * @brief Sends one byte of data to the LCD.
  *
@@ -102,7 +113,7 @@ static void hhg_lcd_free(void);
  * @param byte The byte of data to be sent.
  * @param mode The mode 8bit (data or command).
  */
-static void hhg_lcd_send_byte(u8 byte, u8 mode_8bit);
+static void hhg_lcd_send_byte(u8 byte, bool mode_8bit);
 
 
 /**
@@ -114,37 +125,10 @@ static void hhg_lcd_send_byte(u8 byte, u8 mode_8bit);
  */
 static void hhg_lcd_send_command(u8 command);
 
-static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
-{
-	u8 ret;
+static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
 
-	// request GPIO allocation
-	ret = gpio_request( gpio_number, "GPIO request");
-	if( ret != 0 )	{
-		pr_err("failed to request GPIO %d \n", gpio_number );
-		return ret;
-	}	
-	
-	// set GPIO pin export (also disallow user space to change GPIO direction)
-	ret = gpio_export( gpio_number, 0);
-	if( ret != 0 )	{
-		pr_err("failed to export GPIO %d \n", gpio_number );
-		return ret;
-	}
+static void hhg_lcd_pin_free(u8 gpio_number);
 
-	// set GPIO pin direction
-	ret = gpio_direction_output( gpio_number, gpio_direction);
-	if( ret != 0 )	{
-		pr_err("failed to set GPIO direction %d \n", gpio_number );	
-		return ret;
-	}
-
-	// set GPIO pin default value
-	gpio_set_value(gpio_number, 0);
-
-	// return value when there is no error
-	return 0; 
-}
 
 bool hhg_lcd_init(void)
 {
@@ -270,17 +254,6 @@ bool hhg_lcd_init_4_bit(void)
     , gpio_db7
     );
 
-    // HHG_IS_VALID(gpio_rs, "RS")
-    // if(gpio_rw > -1)
-    // {
-    //     HHG_IS_VALID(gpio_rw, "RW")
-    // }
-    // HHG_IS_VALID(gpio_en, "EN")
-    // HHG_IS_VALID(gpio_db4, "DB4")
-    // HHG_IS_VALID(gpio_db5, "DB5")
-    // HHG_IS_VALID(gpio_db6, "DB6")
-    // HHG_IS_VALID(gpio_db7, "DB7")
-    
 
     hhg_lcd_pin_setup(gpio_rs, 0);
     hhg_lcd_pin_setup(gpio_en, 0);
@@ -289,92 +262,91 @@ bool hhg_lcd_init_4_bit(void)
     hhg_lcd_pin_setup(gpio_db6, 0);
     hhg_lcd_pin_setup(gpio_db7, 0);
 
-    
-    // gpio_request_one(gpio_rs, GPIOF_OUT_INIT_LOW, "RS");
-    // if(gpio_rw > -1)
-    // {
-    //     gpio_request_one(gpio_rw, GPIOF_OUT_INIT_LOW, "RW");
-    // }
-    // gpio_request_one(gpio_en, GPIOF_OUT_INIT_LOW, "EN");
-    // gpio_request_one(gpio_db4, GPIOF_OUT_INIT_LOW, "DB4");
-    // gpio_request_one(gpio_db5, GPIOF_OUT_INIT_LOW, "DB5");
-    // gpio_request_one(gpio_db6, GPIOF_OUT_INIT_LOW, "DB6");
-    // gpio_request_one(gpio_db7, GPIOF_OUT_INIT_LOW, "DB7");
+	usleep_range(41*1000, 50*1000);	// wait for more than 40 ms once the power is on
 
-    //TODO: init procedure
+	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
+	usleep_range(5*1000, 6*1000);	// wait for more than 4.1 ms
 
-    usleep_range(41*1000, 51*1000);
-    hhg_lcd_send_command(0x00);
-    usleep_range(41*1000, 51*1000);
-    
-    
-    hhg_lcd_send_command(0x20);
-    usleep_range(100, 200);
+	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
+	usleep_range(100,200);		// wait for more than 100 us
 
-    hhg_lcd_send_command(0x20);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0x00);
-    usleep_range(100, 200);
+	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
+	usleep_range(100,200);		// wait for more than 100 us
 
-    hhg_lcd_send_command(0x00);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0xE0);
-    
-    usleep_range(41*1000, 51*1000);
+	hhg_lcd_send_command(0x20);		/* Instruction 0010b (Function set)
+					   Set interface to be 4 bits long
+					*/
+	usleep_range(100,200);		// wait for more than 100 us
 
-    hhg_lcd_send_command(0x00);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0x60);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0x80);
-    usleep_range(100, 200);
+	hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
+	hhg_lcd_send_command(0x80);		/* Instruction NF**b
+					   Set N = 1, or 2-line display
+					   Set F = 0, or 5x8 dot character font
+					 */
+	usleep_range(41*1000,50*1000);
 
-    hhg_lcd_send_command(0x00);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0x60);
-    usleep_range(100, 200);
+					/* Display off */
+	hhg_lcd_send_command(0x00);		// Instruction 0000b
+	hhg_lcd_send_command(0x80);		// Instruction 1000b
+	usleep_range(100,200);
 
-    hhg_lcd_send_command(0x00);
-    usleep_range(100, 200);
-    hhg_lcd_send_command(0xF0);
-    usleep_range(100, 200);
+					/* Display clear */
+	hhg_lcd_send_command(0x00);		// Instruction 0000b
+	hhg_lcd_send_command(0x10);		// Instruction 0001b
+	usleep_range(100,200);
 
+					/* Entry mode set */
+	hhg_lcd_send_command(0x00);		// Instruction 0000b
+	hhg_lcd_send_command(0x60);		/* Instruction 01(I/D)Sb -> 0110b
+					   Set I/D = 1, or increment or decrement DDRAM address by 1
+					   Set S = 0, or no display shift
+					*/
+	usleep_range(100,200);
 
-    hhg_lcd_send_byte(0x40, false);
-    usleep_range(100, 200);
-    hhg_lcd_send_byte(0x80, false);
+	/* Initialization Completed, but set up default LCD setting here */
+
+					/* Display On/off Control */
+	hhg_lcd_send_command(0x00);		// Instruction 0000b
+	hhg_lcd_send_command(0xF0);		/* Instruction 1DCBb  
+					   Set D= 1, or Display on
+					   Set C= 1, or Cursor on
+					   Set B= 1, or Blinking on
+					*/
+	usleep_range(100,200);
+
+    hhg_lcd_send_byte('X', data_mode_8_bit);
+    hhg_lcd_send_byte('x', data_mode_8_bit);
 
     return true;
 }
 
 static void hhg_lcd_free(void)
 {
-    gpio_free(gpio_rs);
+    hhg_lcd_pin_free(gpio_rs);
     if(gpio_rw > -1)
     {
-        gpio_free(gpio_rw);
+        hhg_lcd_pin_free(gpio_rw);
     }
-    gpio_free(gpio_en);
+    hhg_lcd_pin_free(gpio_en);
     if(data_mode_8_bit)
     {
-        gpio_free(gpio_db0);
-        gpio_free(gpio_db1);
-        gpio_free(gpio_db2);
-        gpio_free(gpio_db3);
+        hhg_lcd_pin_free(gpio_db0);
+        hhg_lcd_pin_free(gpio_db1);
+        hhg_lcd_pin_free(gpio_db2);
+        hhg_lcd_pin_free(gpio_db3);
     }
-    gpio_free(gpio_db4);
-    gpio_free(gpio_db5);
-    gpio_free(gpio_db6);
-    gpio_free(gpio_db7);
+    hhg_lcd_pin_free(gpio_db4);
+    hhg_lcd_pin_free(gpio_db5);
+    hhg_lcd_pin_free(gpio_db6);
+    hhg_lcd_pin_free(gpio_db7);
 }
 
-void hhg_lcd_send_byte(u8 byte, u8 mode_8bit)
+static void hhg_lcd_send_nibble(u8 byte)
 {
-
-    gpio_set_value(gpio_db4, (byte >> 4 ) & 0x01);
-    gpio_set_value(gpio_db5, (byte >> 5 ) & 0x01);
-    gpio_set_value(gpio_db6, (byte >> 6 ) & 0x01);
-    gpio_set_value(gpio_db7, (byte >> 7 ) & 0x01);
+    gpio_set_value(gpio_db4, (byte >> 0 ) & 0x01);
+    gpio_set_value(gpio_db5, (byte >> 1 ) & 0x01);
+    gpio_set_value(gpio_db6, (byte >> 2 ) & 0x01);
+    gpio_set_value(gpio_db7, (byte >> 3 ) & 0x01);
 
     pr_info("hhg_lcd_send_byte: "
     " db4:%d"
@@ -387,16 +359,31 @@ void hhg_lcd_send_byte(u8 byte, u8 mode_8bit)
     , (byte >> 7 ) & 0x01
     ); 
 
-    gpio_set_value(gpio_rs, HHG_COMMAND_MODE);
+    gpio_set_value(gpio_rs, HHG_DATA_MODE);
     usleep_range(5, 10);
 
-    
-    
+	gpio_set_value(gpio_en, 1);
+	usleep_range(5, 10);
+	gpio_set_value(gpio_en, 0);
+}
+
+void hhg_lcd_send_byte(u8 byte, bool mode_8bit)
+{
+    if(mode_8bit == 0)
+    {
+        hhg_lcd_send_nibble(byte >> 4);
+        usleep_range(2000, 3000);	// added delay instead of busy checking
+        hhg_lcd_send_nibble(byte & 0x0F);
+    }
+        
+
 }
 
 
 void hhg_lcd_send_command(u8 command)
 {
+    usleep_range(2000, 3000);	// added delay instead of busy checking
+
     gpio_set_value(gpio_db4, (command >> 4 ) & 0x01);
     gpio_set_value(gpio_db5, (command >> 5 ) & 0x01);
     gpio_set_value(gpio_db6, (command >> 6 ) & 0x01);
@@ -415,8 +402,50 @@ void hhg_lcd_send_command(u8 command)
 
     gpio_set_value(gpio_rs, HHG_COMMAND_MODE);
     usleep_range(5, 10);
+
+    gpio_set_value(gpio_en, 1);
+	usleep_range(5, 10);
+	gpio_set_value(gpio_en, 0);
 }
 
+
+u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
+{
+	u8 ret;
+
+	// request GPIO allocation
+	ret = gpio_request( gpio_number, "GPIO request");
+	if( ret != 0 )	{
+		pr_err("failed to request GPIO %d \n", gpio_number );
+		return ret;
+	}	
+	
+	// set GPIO pin export (also disallow user space to change GPIO direction)
+	ret = gpio_export( gpio_number, 0);
+	if( ret != 0 )	{
+		pr_err("failed to export GPIO %d \n", gpio_number );
+		return ret;
+	}
+
+	// set GPIO pin direction
+	ret = gpio_direction_output( gpio_number, gpio_direction);
+	if( ret != 0 )	{
+		pr_err("failed to set GPIO direction %d \n", gpio_number );	
+		return ret;
+	}
+
+	// set GPIO pin default value
+	gpio_set_value(gpio_number, 0);
+
+	// return value when there is no error
+	return 0; 
+}
+
+static void hhg_lcd_pin_free(u8 gpio_number)
+{
+    gpio_unexport(gpio_number);
+    gpio_free(gpio_number);
+}
 
 void hhg_lcd_send_data(u8 data)
 {
