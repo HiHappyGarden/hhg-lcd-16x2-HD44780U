@@ -42,10 +42,8 @@ if (!gpio_is_valid(gpio)) \
 //LCD MANAGEMENT
 
 static bool data_mode_8_bit = false;
-static bool enable_read_mode = false;
 
 static short gpio_rs  = -1;
-static short gpio_rw  = -1;
 static short gpio_en  = -1;
 static short gpio_db0  = -1;
 static short gpio_db1  = -1;
@@ -88,12 +86,32 @@ static bool hhg_lcd_init_8_bit(void);
  */
 static bool hhg_lcd_init_4_bit(void);
 
+
+/**
+ * @brief Frees the pin used by the HHG LCD.
+ *
+ * This function frees the specified GPIO pin used by the HHG LCD.
+ *
+ * @param gpio_number The GPIO pin number to be freed.
+ */
+static void hhg_lcd_pin_free(u8 gpio_number);
+
 /**
  * @brief Initializes the LCD in 4-bit mode.
  * 
  */
 static void hhg_lcd_free(void);
 
+/**
+ * @brief Sets up the pin for the HHG LCD.
+ *
+ * This function sets up the specified GPIO pin for the HHG LCD.
+ *
+ * @param gpio_number The GPIO pin number to be set up.
+ * @param gpio_direction The direction of the GPIO pin (input or output).
+ * @return `true` if the operation was successful, `false` otherwise.
+ */
+static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
 
 /**
  * @brief Sends one nibble of data to the LCD.
@@ -102,42 +120,11 @@ static void hhg_lcd_free(void);
  *
  * @param byte The nibble of data to be sent.
  */
-static void hhg_lcd_send_nibble(u8 byte);
-
-
-/**
- * @brief Sends one byte of data to the LCD.
- *
- * This function sends one byte of data to the LCD.
- *
- * @param byte The byte of data to be sent.
- * @param mode The mode 8bit (data or command).
- */
-static void hhg_lcd_send_byte(u8 byte, bool mode_8bit);
-
-
-/**
- * @brief Sends a command to the LCD.
- *
- * This function sends a command to the LCD.
- *
- * @param command The command to be sent.
- */
-static void hhg_lcd_send_command(u8 command);
-
-static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
-
-static void hhg_lcd_pin_free(u8 gpio_number);
+static void hhg_lcd_send_nibble(u8 byte, bool rs_value);
 
 
 bool hhg_lcd_init(void)
 {
-    if(gpio_rw > -1)
-    {
-        pr_info("read mode enabled");
-        enable_read_mode = true;
-    }
-
     if(
         gpio_db0 > -1
         && gpio_db1 > -1
@@ -208,7 +195,6 @@ bool hhg_lcd_init_8_bit(void)
 {
     pr_info("init 8 bit data mode done"
     " gpio_rs:%d"
-    " gpio_rw:%d"
     " gpio_en:%d"
     " gpio_db0:%d"
     " gpio_db1:%d"
@@ -219,7 +205,6 @@ bool hhg_lcd_init_8_bit(void)
     " gpio_db6:%d"
     " gpio_db7:%d"
     , gpio_rs
-    , gpio_rw
     , gpio_en
     , gpio_db0
     , gpio_db1
@@ -239,14 +224,12 @@ bool hhg_lcd_init_4_bit(void)
 
     pr_info("init 4 bit data mode done"
     " gpio_rs:%d"
-    " gpio_rw:%d"
     " gpio_en:%d"
     " gpio_db4:%d"
     " gpio_db5:%d"
     " gpio_db6:%d"
     " gpio_db7:%d"
     , gpio_rs
-    , gpio_rw
     , gpio_en
     , gpio_db4
     , gpio_db5
@@ -262,21 +245,20 @@ bool hhg_lcd_init_4_bit(void)
     hhg_lcd_pin_setup(gpio_db6, 0);
     hhg_lcd_pin_setup(gpio_db7, 0);
 
-	usleep_range(41*1000, 50*1000);	// wait for more than 40 ms once the power is on
+    //for main timing see manual page 45
+    //for timing and command see table 6 page 24
 
-	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
-	usleep_range(5*1000, 6*1000);	// wait for more than 4.1 ms
+	usleep_range(45*1000, 55*1000);	// Wait for more than 40 ms
 
-	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
-	usleep_range(100,200);		// wait for more than 100 us
+	hhg_lcd_send_command(0x20);		// Function set
+	usleep_range(5*1000, 6*1000);   //Wait for more than 4.1 ms
 
-	hhg_lcd_send_command(0x30);		// Instruction 0011b (Function set)
-	usleep_range(100,200);		// wait for more than 100 us
+	hhg_lcd_send_command(0x20);		// Function set
+	usleep_range(100,200);		
 
-	hhg_lcd_send_command(0x20);		/* Instruction 0010b (Function set)
-					   Set interface to be 4 bits long
-					*/
-	usleep_range(100,200);		// wait for more than 100 us
+	hhg_lcd_send_command(0x20);		// Instruction 0011b (Function set)
+	usleep_range(100,200);		    //Wait for more than 100 μs
+	
 
 	hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
 	hhg_lcd_send_command(0x80);		/* Instruction NF**b
@@ -303,30 +285,35 @@ bool hhg_lcd_init_4_bit(void)
 					*/
 	usleep_range(100,200);
 
-	/* Initialization Completed, but set up default LCD setting here */
 
-					/* Display On/off Control */
-	hhg_lcd_send_command(0x00);		// Instruction 0000b
-	hhg_lcd_send_command(0xF0);		/* Instruction 1DCBb  
-					   Set D= 1, or Display on
-					   Set C= 1, or Cursor on
-					   Set B= 1, or Blinking on
-					*/
-	usleep_range(100,200);
+    hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
+	
 
-    hhg_lcd_send_byte('X', data_mode_8_bit);
-    hhg_lcd_send_byte('x', data_mode_8_bit);
+
+    char c = '1';
+    for (u8 i = 0; i < 6; i++)
+    {   
+        hhg_lcd_send_char(c);
+        c++;
+    }
+    // for (u8 i = 0; i < 9; i++)
+    // {   
+    //     hhg_lcd_send_byte(c);
+    //     c ++;
+    // }
 
     return true;
+}
+
+inline static void hhg_lcd_pin_free(u8 gpio_number)
+{
+    gpio_unexport(gpio_number);
+    gpio_free(gpio_number);
 }
 
 static void hhg_lcd_free(void)
 {
     hhg_lcd_pin_free(gpio_rs);
-    if(gpio_rw > -1)
-    {
-        hhg_lcd_pin_free(gpio_rw);
-    }
     hhg_lcd_pin_free(gpio_en);
     if(data_mode_8_bit)
     {
@@ -341,25 +328,43 @@ static void hhg_lcd_free(void)
     hhg_lcd_pin_free(gpio_db7);
 }
 
-static void hhg_lcd_send_nibble(u8 byte)
+
+u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
+{
+	u8 ret;
+
+	ret = gpio_request( gpio_number, "GPIO request");
+	if( ret != 0 )	{
+		pr_err("failed to request GPIO %d \n", gpio_number );
+		return ret;
+	}	
+	
+	ret = gpio_export( gpio_number, 0);
+	if( ret != 0 )	{
+		pr_err("failed to export GPIO %d \n", gpio_number );
+		return ret;
+	}
+
+	ret = gpio_direction_output( gpio_number, gpio_direction);
+	if( ret != 0 )	{
+		pr_err("failed to set GPIO direction %d \n", gpio_number );	
+		return ret;
+	}
+
+	gpio_set_value(gpio_number, 0);
+
+	return 0; 
+}
+
+
+void hhg_lcd_send_nibble(u8 byte, bool rs_value)
 {
     gpio_set_value(gpio_db4, (byte >> 0 ) & 0x01);
     gpio_set_value(gpio_db5, (byte >> 1 ) & 0x01);
     gpio_set_value(gpio_db6, (byte >> 2 ) & 0x01);
     gpio_set_value(gpio_db7, (byte >> 3 ) & 0x01);
 
-    pr_info("hhg_lcd_send_byte: "
-    " db4:%d"
-    " db5:%d"
-    " db6:%d"
-    " db7:%d"
-    , (byte >> 4 ) & 0x01
-    , (byte >> 5 ) & 0x01
-    , (byte >> 6 ) & 0x01
-    , (byte >> 7 ) & 0x01
-    ); 
-
-    gpio_set_value(gpio_rs, HHG_DATA_MODE);
+    gpio_set_value(gpio_rs, rs_value);
     usleep_range(5, 10);
 
 	gpio_set_value(gpio_en, 1);
@@ -367,98 +372,60 @@ static void hhg_lcd_send_nibble(u8 byte)
 	gpio_set_value(gpio_en, 0);
 }
 
-void hhg_lcd_send_byte(u8 byte, bool mode_8bit)
+inline void hhg_lcd_send_command(u8 command)
 {
-    if(mode_8bit == 0)
+    usleep_range(2000, 3000);
+    hhg_lcd_send_nibble(command >> 4, HHG_COMMAND_MODE);
+}
+
+
+void hhg_lcd_send_char(char byte)
+{
+    if(data_mode_8_bit)
     {
-        hhg_lcd_send_nibble(byte >> 4);
-        usleep_range(2000, 3000);	// added delay instead of busy checking
-        hhg_lcd_send_nibble(byte & 0x0F);
+        //TODO: 8 bit mode
     }
-        
-
+    else
+    {
+        hhg_lcd_send_nibble(byte >> 4, HHG_DATA_MODE);     // upper
+        usleep_range(2000, 3000);
+        hhg_lcd_send_nibble(byte & 0x0F, HHG_DATA_MODE);   // lower
+    }
 }
+EXPORT_SYMBOL(hhg_lcd_send_char);
 
-
-void hhg_lcd_send_command(u8 command)
-{
-    usleep_range(2000, 3000);	// added delay instead of busy checking
-
-    gpio_set_value(gpio_db4, (command >> 4 ) & 0x01);
-    gpio_set_value(gpio_db5, (command >> 5 ) & 0x01);
-    gpio_set_value(gpio_db6, (command >> 6 ) & 0x01);
-    gpio_set_value(gpio_db7, (command >> 7 ) & 0x01);
-
-    pr_info("hhg_lcd_send_command: "
-    " db4:%d"
-    " db5:%d"
-    " db6:%d"
-    " db7:%d"
-    , (command >> 4 ) & 0x01
-    , (command >> 5 ) & 0x01
-    , (command >> 6 ) & 0x01
-    , (command >> 7 ) & 0x01
-    ); 
-
-    gpio_set_value(gpio_rs, HHG_COMMAND_MODE);
-    usleep_range(5, 10);
-
-    gpio_set_value(gpio_en, 1);
-	usleep_range(5, 10);
-	gpio_set_value(gpio_en, 0);
-}
-
-
-u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
-{
-	u8 ret;
-
-	// request GPIO allocation
-	ret = gpio_request( gpio_number, "GPIO request");
-	if( ret != 0 )	{
-		pr_err("failed to request GPIO %d \n", gpio_number );
-		return ret;
-	}	
-	
-	// set GPIO pin export (also disallow user space to change GPIO direction)
-	ret = gpio_export( gpio_number, 0);
-	if( ret != 0 )	{
-		pr_err("failed to export GPIO %d \n", gpio_number );
-		return ret;
-	}
-
-	// set GPIO pin direction
-	ret = gpio_direction_output( gpio_number, gpio_direction);
-	if( ret != 0 )	{
-		pr_err("failed to set GPIO direction %d \n", gpio_number );	
-		return ret;
-	}
-
-	// set GPIO pin default value
-	gpio_set_value(gpio_number, 0);
-
-	// return value when there is no error
-	return 0; 
-}
-
-static void hhg_lcd_pin_free(u8 gpio_number)
-{
-    gpio_unexport(gpio_number);
-    gpio_free(gpio_number);
-}
-
-void hhg_lcd_send_data(u8 data)
-{
-    //TODO: send data
-}
-EXPORT_SYMBOL(hhg_lcd_send_data);
-
-void hhg_lcd_send_str(const char* str, __u16 len)
+void hhg_lcd_send_str(const char* str, u16 len)
 {
     //TODO: send string
 }
 EXPORT_SYMBOL(hhg_lcd_send_str);
 
+void hhg_lcd_clear(void)
+{
+    //TODO: send string
+}
+EXPORT_SYMBOL(hhg_lcd_clear);
+
+void hhg_lcd_select_line(u8 line)
+{
+    //TODO: send string
+}
+EXPORT_SYMBOL(hhg_lcd_select_line);
+
+void hhg_lcd_set_flags(u8 flags)
+{
+    if(data_mode_8_bit)
+    {
+        //TODO: 8 bit mode
+    }
+    else
+    {
+        hhg_lcd_send_command(0x00); //upper
+	    hhg_lcd_send_command(0x80 | ((flags & 0x07) << 4)); //lower
+    }
+    usleep_range(50, 100);
+}
+EXPORT_SYMBOL(hhg_lcd_set_flags);
 
 //MODULE
 
@@ -533,9 +500,6 @@ static ssize_t hhg_lcd_fops_write(struct file* filp, const char* buff, size_t le
 
 module_param(gpio_rs, short, 0660);
 MODULE_PARM_DESC(gpio_rs, "GPIO RS - Select registers");
-
-module_param(gpio_rw, short, 0660);
-MODULE_PARM_DESC(gpio_rw, "GPIO RW - Select read or write");
 
 module_param(gpio_en, short, 0660);
 MODULE_PARM_DESC(gpio_en, "GPIO EN - Start data read/write");

@@ -34,14 +34,34 @@
 #define HHG_COMMAND_MODE (0)
 #define HHG_DATA_MODE (1)
 
+//Sets entire display (D) on/off,
+// cursor on/off (C), and
+// blinking of cursor position
+// character (B).
+enum hhg_lcd_flag
+{
+    HHG_LCD_BLINK_ON    = 0x01,
+    HHG_LCD_CURSOR_ON   = 0x02,
+    HHG_LCD_DISPLAY_ON  = 0x04
+};
+
 /**
- * @brief Sends data to the LCD.
+ * @brief Sends a command to the LCD.
  *
- * This function sends the specified data to the LCD.
+ * This function sends a command to the LCD.
  *
- * @param data The data to be sent.
+ * @param command The command to be sent.
  */
-void hhg_lcd_send_data(__u8 data);
+ void hhg_lcd_send_command(u8 command);
+
+/**
+ * @brief Sends char to the LCD.
+ *
+ * This function sends the specified char to the LCD.
+ *
+ * @param byte The char to be sent.
+ */
+void hhg_lcd_send_char(char byte);
 
 /**
  * @brief Sends a string to the LCD.
@@ -51,7 +71,12 @@ void hhg_lcd_send_data(__u8 data);
  * @param str Pointer to the string to be sent.
  * @param len The length of the string.
  */
-void hhg_lcd_send_str(const char* str, __u16 len);
+void hhg_lcd_send_str(const char* str, u16 len);
 
+void hhg_lcd_clear(void);
+
+void hhg_lcd_select_line(u8 line);
+
+void hhg_lcd_set_flags(u8 flags);
 
 #endif
