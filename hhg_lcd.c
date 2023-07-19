@@ -55,7 +55,11 @@ static short gpio_db6  = -1;
 static short gpio_db7  = -1;
 
 
-static char msg_to_display[HHG_ROWS * HHG_COLS + 1 ] = { [ 0 ... (HHG_ROWS * HHG_COLS) ] = 0};
+static char msg_to_display[][HHG_COLS + 1] = {
+    [0] = { [ 0 ... HHG_COLS - 1 ] = 1},
+    [1] = { [ 0 ... HHG_COLS - 1 ] = 2}
+};
+
 
 // static decl
 
@@ -259,22 +263,14 @@ bool hhg_lcd_init_4_bit(void)
 	hhg_lcd_send_command(0x20);		// Instruction 0011b (Function set)
 	usleep_range(100,200);		    //Wait for more than 100 μs
 	
+    hhg_lcd_select_line(1);
 
-	hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
-	hhg_lcd_send_command(0x80);		/* Instruction NF**b
-					   Set N = 1, or 2-line display
-					   Set F = 0, or 5x8 dot character font
-					 */
 	usleep_range(41*1000,50*1000);
 
-					/* Display off */
-	hhg_lcd_send_command(0x00);		// Instruction 0000b
-	hhg_lcd_send_command(0x80);		// Instruction 1000b
+	hhg_lcd_set_flags(HHG_LCD_DISPLAY_OFF); 
 	usleep_range(100,200);
 
-					/* Display clear */
-	hhg_lcd_send_command(0x00);		// Instruction 0000b
-	hhg_lcd_send_command(0x10);		// Instruction 0001b
+    hhg_lcd_clear();
 	usleep_range(100,200);
 
 					/* Entry mode set */
@@ -285,22 +281,7 @@ bool hhg_lcd_init_4_bit(void)
 					*/
 	usleep_range(100,200);
 
-
     hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
-	
-
-
-    char c = '1';
-    for (u8 i = 0; i < 6; i++)
-    {   
-        hhg_lcd_send_char(c);
-        c++;
-    }
-    // for (u8 i = 0; i < 9; i++)
-    // {   
-    //     hhg_lcd_send_byte(c);
-    //     c ++;
-    // }
 
     return true;
 }
@@ -394,21 +375,65 @@ void hhg_lcd_send_char(char byte)
 }
 EXPORT_SYMBOL(hhg_lcd_send_char);
 
-void hhg_lcd_send_str(const char* str, u16 len)
+void hhg_lcd_send_str(const char* buff)
 {
-    //TODO: send string
+    char* new_line = NULL;
+    if((new_line = strchr(buff, '\n')) != NULL)
+    {
+        size_t size = new_line - buff;
+        size = size < sizeof(msg_to_display[0]) ? size : sizeof(msg_to_display[0]) - 1;
+        memcpy(msg_to_display[0], buff,  size);
+        new_line++;
+        strncpy(msg_to_display[1], new_line,  sizeof(msg_to_display[0]));
+    }
+    else if(strlen(buff) > HHG_COLS)
+    {
+        strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
+        strncpy(msg_to_display[1], buff + sizeof(msg_to_display[0]),  sizeof(msg_to_display[0]));
+    }
+    else
+    {
+        strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
+    }
+
+    for (u8 it = 0; it < HHG_ROWS; it++)
+    {
+        hhg_lcd_select_line(it + 1);
+        for (u8 i = 0; i < strlen(msg_to_display[it]); i++)
+        {   
+            hhg_lcd_send_char(msg_to_display[it][i]);
+        }
+    }
 }
 EXPORT_SYMBOL(hhg_lcd_send_str);
 
 void hhg_lcd_clear(void)
 {
-    //TODO: send string
+    hhg_lcd_send_command(0x00);		// Instruction 0000b
+	hhg_lcd_send_command(0x10);		// Instruction 0001b
 }
 EXPORT_SYMBOL(hhg_lcd_clear);
 
 void hhg_lcd_select_line(u8 line)
 {
-    //TODO: send string
+    u8 cmd = 0;
+    switch (line)
+    {
+    case 1:
+        cmd = 0x80;
+        break;
+    case 2:
+        cmd = 0xC0;
+        break;
+    default:
+        break;
+    }
+
+    if(cmd > 0)
+    {
+        hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
+        hhg_lcd_send_command(cmd);		/* Instruction select line */
+    }
 }
 EXPORT_SYMBOL(hhg_lcd_select_line);
 
@@ -636,7 +661,9 @@ int hhg_lcd_fops_release(struct inode *inode, struct file *file)
 
 ssize_t hhg_lcd_fops_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
 {
-    return simple_read_from_buffer(buff, len, off, msg_to_display, strlen(msg_to_display));
+    char str[] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1 ] = 0};    
+    snprintf(str, sizeof(str), "%s%s", msg_to_display[0], msg_to_display[1]);
+    return simple_read_from_buffer(buff, len, off, str, strlen(str));
 }
 
 ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff_t *off)
@@ -653,13 +680,34 @@ ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff
     {
         bytes_to_write = len;
     }
-    
+
+    // char* new_line = NULL;
+    // if((new_line = strchr(buff, '\n')) != NULL)
+    // {
+    //     size_t size = new_line - buff;
+    //     size = size < sizeof(msg_to_display[0]) ? size : sizeof(msg_to_display[0]) - 1;
+    //     memcpy(msg_to_display[0], buff,  size);
+    //     new_line++;
+    //     strncpy(msg_to_display[1], new_line,  sizeof(msg_to_display[0]));
+    // }
+    // else if(len > HHG_COLS)
+    // {
+    //     strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
+    //     strncpy(msg_to_display[1], buff + sizeof(msg_to_display[0]),  sizeof(msg_to_display[0]));
+    // }
+    // else
+    // {
+    //     strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
+    // }
+    hhg_lcd_send_str(buff);
+
+
     ssize_t not_written = len - simple_write_to_buffer(msg_to_display, sizeof(msg_to_display) - 1, off, buff, len);
     if(not_written > 0)
     {
         pr_warn("not written all data exceed for: %ld char", not_written);
     }
-    
+
     return len;
 }
 

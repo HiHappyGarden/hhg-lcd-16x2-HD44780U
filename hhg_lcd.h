@@ -40,6 +40,7 @@
 // character (B).
 enum hhg_lcd_flag
 {
+    HHG_LCD_DISPLAY_OFF = 0x00,
     HHG_LCD_BLINK_ON    = 0x01,
     HHG_LCD_CURSOR_ON   = 0x02,
     HHG_LCD_DISPLAY_ON  = 0x04
@@ -68,10 +69,10 @@ void hhg_lcd_send_char(char byte);
  *
  * This function sends the specified string to the LCD.
  *
- * @param str Pointer to the string to be sent.
+ * @param buff Pointer to the string to be sent.
  * @param len The length of the string.
  */
-void hhg_lcd_send_str(const char* str, u16 len);
+void hhg_lcd_send_str(const char* buff);
 
 void hhg_lcd_clear(void);
 
