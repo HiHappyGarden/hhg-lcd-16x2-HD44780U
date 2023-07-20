@@ -283,6 +283,8 @@ bool hhg_lcd_init_4_bit(void)
 
     hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
 
+    hhg_lcd_send_str("Agnesina biricchina");
+
     return true;
 }
 
@@ -393,6 +395,7 @@ void hhg_lcd_send_str(const char* buff)
     }
     else
     {
+        pr_info("--->1.1");
         strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
     }
 
@@ -669,17 +672,17 @@ ssize_t hhg_lcd_fops_read(struct file *filp, char __user *buff, size_t len, loff
 ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
 
-    size_t bytes_to_write = 0;
+    // size_t bytes_to_write = 0;
 
-    memset(msg_to_display, '\0', sizeof(msg_to_display));
-    if(len > sizeof(msg_to_display) - 1)
-    {
-        bytes_to_write = sizeof(msg_to_display) - 1;
-    }
-    else
-    {
-        bytes_to_write = len;
-    }
+    // memset(msg_to_display, '\0', sizeof(msg_to_display));
+    // if(len > sizeof(msg_to_display) - 1)
+    // {
+    //     bytes_to_write = sizeof(msg_to_display) - 1;
+    // }
+    // else
+    // {
+    //     bytes_to_write = len;
+    // }
 
     // char* new_line = NULL;
     // if((new_line = strchr(buff, '\n')) != NULL)
@@ -699,7 +702,17 @@ ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff
     // {
     //     strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
     // }
-    hhg_lcd_send_str(buff);
+    
+    // hhg_lcd_send_str(buff);
+
+hhg_lcd_clear();
+
+pr_err("--->1");
+    for (u8 it = 0; it < 5; it++)
+    {
+//        pr_err("--->2 %c", buff[it]);
+        hhg_lcd_send_char(buff[it]);
+    }
 
 
     ssize_t not_written = len - simple_write_to_buffer(msg_to_display, sizeof(msg_to_display) - 1, off, buff, len);
