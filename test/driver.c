@@ -63,7 +63,7 @@ int main ( int argc, char *argv[] )
 
 	// command = *(ioctl_command);
 	
-write(fd, "ABCDEFG", 0 );
+write(fd, "ciao\nagne", 9 );
 
 
 

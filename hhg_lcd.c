@@ -55,7 +55,7 @@ static short gpio_db6  = -1;
 static short gpio_db7  = -1;
 
 
-static char msg_to_display[(HHG_ROWS * HHG_COLS) + 2] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1] = 1};
+static char msg_to_display[(HHG_ROWS * HHG_COLS) + 2] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1] = 0};
 
 // static decl
 
@@ -378,26 +378,31 @@ void hhg_lcd_send_str(const char buff[])
         return;
     }
 
+    hhg_lcd_clear();
+
     u8 line = 1;
 
     hhg_lcd_select_line(line);
 
-    u8 col_size = 0;
+    u8 col_counter = 0;
     const char* cursor = buff;
     while(*cursor != '\0' && line <= HHG_ROWS)
     {
-        if(col_size >= HHG_COLS || *cursor == '\n')
+        if(col_counter >= HHG_COLS || *cursor == '\n')
         {
             line++;
-            col_size = 0;
+            col_counter = 0;
+            pr_info("line:%u", line);
             hhg_lcd_select_line(line);
             if(*cursor == '\n')
             {
                 cursor++;
+                continue;                
             }
         }
+        pr_info("col:%u - %c", col_counter, *cursor);
         hhg_lcd_send_char(*cursor);
-        col_size++;
+        col_counter++;
         cursor++;
     }
 }
@@ -427,8 +432,8 @@ void hhg_lcd_select_line(u8 line)
 
     if(cmd > 0)
     {
-        hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
-        hhg_lcd_send_command(cmd);		/* Instruction select line */
+        hhg_lcd_send_command(cmd);		// Instruction 0010b (Function set)
+        hhg_lcd_send_command(0x00);		/* Instruction select line */
     }
 }
 EXPORT_SYMBOL(hhg_lcd_select_line);
@@ -643,7 +648,7 @@ int hhg_lcd_fops_open(struct inode *inode, struct file *file)
 
     atomic_inc(&device_busy);
 
-    pr_info("Device open:%u\n", atomic_read(&device_busy));
+    pr_info("open:%u\n", atomic_read(&device_busy));
     return 0;
 }
 
@@ -651,15 +656,13 @@ int hhg_lcd_fops_release(struct inode *inode, struct file *file)
 {
     atomic_sub(1, &device_busy);
 
-    pr_info("Device release:%u\n", atomic_read(&device_busy));
+    pr_info("release:%u\n", atomic_read(&device_busy));
     return 0;
 }
 
 ssize_t hhg_lcd_fops_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
 {
-    char str[] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1 ] = 0};    
-    snprintf(str, sizeof(str), "%s", msg_to_display);
-    return simple_read_from_buffer(buff, len, off, str, strlen(str));
+    return simple_read_from_buffer(buff, len, off, msg_to_display, strlen(msg_to_display));
 }
 
 ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff_t *off)
