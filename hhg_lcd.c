@@ -55,11 +55,7 @@ static short gpio_db6  = -1;
 static short gpio_db7  = -1;
 
 
-static char msg_to_display[][HHG_COLS + 1] = {
-    [0] = { [ 0 ... HHG_COLS - 1 ] = 1},
-    [1] = { [ 0 ... HHG_COLS - 1 ] = 2}
-};
-
+static char msg_to_display[(HHG_ROWS * HHG_COLS) + 2] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1] = 1};
 
 // static decl
 
@@ -283,8 +279,6 @@ bool hhg_lcd_init_4_bit(void)
 
     hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
 
-    hhg_lcd_send_str("Agnesina biricchina");
-
     return true;
 }
 
@@ -377,35 +371,34 @@ void hhg_lcd_send_char(char byte)
 }
 EXPORT_SYMBOL(hhg_lcd_send_char);
 
-void hhg_lcd_send_str(const char* buff)
+void hhg_lcd_send_str(const char buff[])
 {
-    char* new_line = NULL;
-    if((new_line = strchr(buff, '\n')) != NULL)
+    if(!buff)
     {
-        size_t size = new_line - buff;
-        size = size < sizeof(msg_to_display[0]) ? size : sizeof(msg_to_display[0]) - 1;
-        memcpy(msg_to_display[0], buff,  size);
-        new_line++;
-        strncpy(msg_to_display[1], new_line,  sizeof(msg_to_display[0]));
-    }
-    else if(strlen(buff) > HHG_COLS)
-    {
-        strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
-        strncpy(msg_to_display[1], buff + sizeof(msg_to_display[0]),  sizeof(msg_to_display[0]));
-    }
-    else
-    {
-        pr_info("--->1.1");
-        strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
+        return;
     }
 
-    for (u8 it = 0; it < HHG_ROWS; it++)
+    u8 line = 1;
+
+    hhg_lcd_select_line(line);
+
+    u8 col_size = 0;
+    const char* cursor = buff;
+    while(*cursor != '\0' && line <= HHG_ROWS)
     {
-        hhg_lcd_select_line(it + 1);
-        for (u8 i = 0; i < strlen(msg_to_display[it]); i++)
-        {   
-            hhg_lcd_send_char(msg_to_display[it][i]);
+        if(col_size >= HHG_COLS || *cursor == '\n')
+        {
+            line++;
+            col_size = 0;
+            hhg_lcd_select_line(line);
+            if(*cursor == '\n')
+            {
+                cursor++;
+            }
         }
+        hhg_lcd_send_char(*cursor);
+        col_size++;
+        cursor++;
     }
 }
 EXPORT_SYMBOL(hhg_lcd_send_str);
@@ -665,53 +658,23 @@ int hhg_lcd_fops_release(struct inode *inode, struct file *file)
 ssize_t hhg_lcd_fops_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
 {
     char str[] = { [ 0 ... (HHG_ROWS * HHG_COLS) + 1 ] = 0};    
-    snprintf(str, sizeof(str), "%s%s", msg_to_display[0], msg_to_display[1]);
+    snprintf(str, sizeof(str), "%s", msg_to_display);
     return simple_read_from_buffer(buff, len, off, str, strlen(str));
 }
 
 ssize_t hhg_lcd_fops_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
 
-    // size_t bytes_to_write = 0;
+    size_t bytes_to_write = 0;
 
-    // memset(msg_to_display, '\0', sizeof(msg_to_display));
-    // if(len > sizeof(msg_to_display) - 1)
-    // {
-    //     bytes_to_write = sizeof(msg_to_display) - 1;
-    // }
-    // else
-    // {
-    //     bytes_to_write = len;
-    // }
-
-    // char* new_line = NULL;
-    // if((new_line = strchr(buff, '\n')) != NULL)
-    // {
-    //     size_t size = new_line - buff;
-    //     size = size < sizeof(msg_to_display[0]) ? size : sizeof(msg_to_display[0]) - 1;
-    //     memcpy(msg_to_display[0], buff,  size);
-    //     new_line++;
-    //     strncpy(msg_to_display[1], new_line,  sizeof(msg_to_display[0]));
-    // }
-    // else if(len > HHG_COLS)
-    // {
-    //     strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
-    //     strncpy(msg_to_display[1], buff + sizeof(msg_to_display[0]),  sizeof(msg_to_display[0]));
-    // }
-    // else
-    // {
-    //     strncpy(msg_to_display[0], buff,  sizeof(msg_to_display[0]));
-    // }
-    
-    // hhg_lcd_send_str(buff);
-
-hhg_lcd_clear();
-
-pr_err("--->1");
-    for (u8 it = 0; it < 5; it++)
+    memset(msg_to_display, '\0', sizeof(msg_to_display));
+    if(len > sizeof(msg_to_display) - 1)
     {
-//        pr_err("--->2 %c", buff[it]);
-        hhg_lcd_send_char(buff[it]);
+        bytes_to_write = sizeof(msg_to_display) - 1;
+    }
+    else
+    {
+        bytes_to_write = len;
     }
 
 
@@ -720,6 +683,8 @@ pr_err("--->1");
     {
         pr_warn("not written all data exceed for: %ld char", not_written);
     }
+
+    hhg_lcd_send_str(msg_to_display);
 
     return len;
 }

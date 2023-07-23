@@ -72,7 +72,7 @@ void hhg_lcd_send_char(char byte);
  * @param buff Pointer to the string to be sent.
  * @param len The length of the string.
  */
-void hhg_lcd_send_str(const char* buff);
+void hhg_lcd_send_str(const char buff[]);
 
 void hhg_lcd_clear(void);
 
