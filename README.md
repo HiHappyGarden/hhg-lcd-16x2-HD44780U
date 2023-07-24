@@ -12,7 +12,7 @@ sudo make
 
 To install the module:
 ```
-insmod hhg_lcd.ko gpio_rs=26 gpio_en=19 gpio_db4=13 gpio_db5=6 gpio_db6=5 gpio_db7=11
+sudo insmod hhg_lcd.ko gpio_rs=26 gpio_en=19 gpio_db4=13 gpio_db5=6 gpio_db6=5 gpio_db7=11
 ```
 gpio_rs=x gpio_en=x gpio_db4=x gpio_db5=x gpio_db6=x gpio_db7=x corrispondono ai pin dell'LCD riporaro nella documentazione linkata sotto.  
 
@@ -20,7 +20,7 @@ The above configuration has been tested on a Raspberry Pi 4.
 
 To remove the module:
 ```
-sudo make remove
+sudo rmmod hhg_lcd
 ```
 
 ## Documentation reference
