@@ -22,6 +22,10 @@ To remove the module:
 ```
 sudo rmmod hhg_lcd
 ```
+To test:
+```
+echo hello_world > /dev/hhg_lcd
+```
 
 ## Documentation reference
  * [HITACHI HD44780U](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf)
