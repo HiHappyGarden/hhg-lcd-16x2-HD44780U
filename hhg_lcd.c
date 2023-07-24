@@ -259,7 +259,8 @@ bool hhg_lcd_init_4_bit(void)
 	hhg_lcd_send_command(0x20);		// Instruction 0011b (Function set)
 	usleep_range(100,200);		    //Wait for more than 100 μs
 	
-    hhg_lcd_select_line(1);
+	hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
+	hhg_lcd_send_command(0x80);		
 
 	usleep_range(41*1000,50*1000);
 
@@ -410,30 +411,25 @@ EXPORT_SYMBOL(hhg_lcd_send_str);
 
 void hhg_lcd_clear(void)
 {
-    hhg_lcd_send_command(0x00);		// Instruction 0000b
-	hhg_lcd_send_command(0x10);		// Instruction 0001b
+    hhg_lcd_send_command(0x00);
+	hhg_lcd_send_command(0x10);
 }
 EXPORT_SYMBOL(hhg_lcd_clear);
 
 void hhg_lcd_select_line(u8 line)
 {
-    u8 cmd = 0;
     switch (line)
     {
-    case 1:
-        cmd = 0x80;
+    case HHG_FIRST_ROW:
+        hhg_lcd_send_command(0x80);
+        hhg_lcd_send_command(0x00);	
         break;
-    case 2:
-        cmd = 0xC0;
+    case HHG_SECOND_ROW:
+        hhg_lcd_send_command(0xC0);
+        hhg_lcd_send_command(0x00);
         break;
     default:
         break;
-    }
-
-    if(cmd > 0)
-    {
-        hhg_lcd_send_command(cmd);		// Instruction 0010b (Function set)
-        hhg_lcd_send_command(0x00);		/* Instruction select line */
     }
 }
 EXPORT_SYMBOL(hhg_lcd_select_line);
@@ -628,6 +624,8 @@ module_init(hhg_lcd_module_init);
 */
 static void __exit hhg_lcd_module_exit(void)
 {
+    hhg_lcd_clear();
+    hhg_lcd_set_flags(HHG_LCD_DISPLAY_OFF);
 
     hhg_lcd_free();
     device_destroy(hhg_class, hhg_dev);

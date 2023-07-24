@@ -27,6 +27,12 @@
 #define HHG_MAJOR_NUM_START (0)
 #define HHG_MINOR_NUM_COUNT (1)
 
+enum hhg_row
+{
+    HHG_FIRST_ROW = 1,
+    HHG_SECOND_ROW = 2,
+};
+
 #define HHG_ROWS (2)
 #define HHG_COLS (16)
 
@@ -74,10 +80,30 @@ void hhg_lcd_send_char(char byte);
  */
 void hhg_lcd_send_str(const char buff[]);
 
+/**
+ * @brief Clears the HHG LCD display.
+ *
+ * This function clears the content displayed on the HHG LCD.
+ */
 void hhg_lcd_clear(void);
 
+/**
+ * @brief Selects the line to write on the HHG LCD.
+ *
+ * This function selects the line on the HHG LCD where the subsequent text will be written.
+ *
+ * @param line The line number to select (0 for the first line, 1 for the second line, etc.).
+ */
 void hhg_lcd_select_line(u8 line);
 
+/**
+ * @brief Sets flags for the HHG LCD.
+ *
+ * This function sets the specified flags for the HHG LCD.
+ *
+ * @param flags The flags to be set for the LCD.
+ */
 void hhg_lcd_set_flags(u8 flags);
+
 
 #endif
