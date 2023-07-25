@@ -88,13 +88,13 @@ void hhg_lcd_send_str(const char buff[]);
 void hhg_lcd_clear(void);
 
 /**
- * @brief Selects the line to write on the HHG LCD.
+ * @brief Selects the row to write on the HHG LCD.
  *
- * This function selects the line on the HHG LCD where the subsequent text will be written.
+ * This function selects the row on the HHG LCD where the subsequent text will be written.
  *
- * @param line The line number to select (0 for the first line, 1 for the second line, etc.).
+ * @param row The row number to select (0 for the first row, 1 for the second row, etc.).
  */
-void hhg_lcd_select_line(u8 line);
+void hhg_lcd_select_row(enum hhg_row row);
 
 /**
  * @brief Sets flags for the HHG LCD.

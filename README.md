@@ -1,7 +1,7 @@
 # happy-gardenpi-driver
 Simple driver for LCD 16x2 management with chip HITACHI HD44780U compatible.  
 
-At the moment, only the 4-bit configuration is supported.  
+At the moment, only the 4-bit configuration is tested.  
 
 To compile the module:
 ```

@@ -122,6 +122,14 @@ static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
  */
 static void hhg_lcd_send_nibble(u8 byte, bool rs_value);
 
+/**
+ * @brief Sends one byte of data to the LCD.
+ *
+ * This function sends one byte of data to the LCD.
+ *
+ * @param byte The byte of data to be sent.
+ */
+static void hhg_lcd_send_byte(u8 byte, bool rs_value);
 
 bool hhg_lcd_init(void)
 {
@@ -216,7 +224,36 @@ bool hhg_lcd_init_8_bit(void)
     , gpio_db7
     );
 
-    return false;
+    //for main timing see manual page 45
+    //for timing and command see table 6 page 24
+
+	usleep_range(45*1000, 55*1000);	// Wait for more than 40 ms
+
+	hhg_lcd_send_command(0x30);		// Function set
+	usleep_range(5*2000, 6*1000);	// Wait for more than 4,1 ms
+
+	hhg_lcd_send_command(0x30);		// Function set
+	usleep_range(150, 200);		    //Wait for more than 100 μs
+
+	hhg_lcd_send_command(0x30);		// Function set
+	usleep_range(150, 200);		    //Wait for more than 100 μs
+
+
+	hhg_lcd_send_command(0x38);		// Function set (Interface is 8 bits long. Specify the number of display lines and character font.)
+	usleep_range(150, 200);		    //Wait for more than 100 μs
+	
+	hhg_lcd_send_command(0x08);		// Display off
+	usleep_range(150, 200);		    //Wait for more than 100 μs
+
+
+    hhg_lcd_clear();
+	usleep_range(150, 200);
+
+	hhg_lcd_send_command(0x06);		// Entry mode set
+
+    hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
+
+    return true;
 }
 
 bool hhg_lcd_init_4_bit(void)
@@ -254,21 +291,21 @@ bool hhg_lcd_init_4_bit(void)
 	usleep_range(5*1000, 6*1000);   //Wait for more than 4.1 ms
 
 	hhg_lcd_send_command(0x20);		// Function set
-	usleep_range(100,200);		
+	usleep_range(150, 200);		
 
 	hhg_lcd_send_command(0x20);		// Instruction 0011b (Function set)
-	usleep_range(100,200);		    //Wait for more than 100 μs
+	usleep_range(150, 200);		    //Wait for more than 100 μs
 	
-	hhg_lcd_send_command(0x20);		// Instruction 0010b (Function set)
+	hhg_lcd_send_command(0x20);		
 	hhg_lcd_send_command(0x80);		
 
-	usleep_range(41*1000,50*1000);
+	usleep_range(41*1000, 50*1000);
 
 	hhg_lcd_set_flags(HHG_LCD_DISPLAY_OFF); 
-	usleep_range(100,200);
+	usleep_range(150, 200);
 
     hhg_lcd_clear();
-	usleep_range(100,200);
+	usleep_range(150, 200);
 
 					/* Entry mode set */
 	hhg_lcd_send_command(0x00);		// Instruction 0000b
@@ -276,7 +313,7 @@ bool hhg_lcd_init_4_bit(void)
 					   Set I/D = 1, or increment or decrement DDRAM address by 1
 					   Set S = 0, or no display shift
 					*/
-	usleep_range(100,200);
+	usleep_range(150, 200);
 
     hhg_lcd_set_flags(HHG_LCD_DISPLAY_ON); 
 
@@ -335,6 +372,26 @@ u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
 }
 
 
+void hhg_lcd_send_byte(u8 byte, bool rs_value)
+{
+    gpio_set_value(gpio_db0, (byte >> 0 ) & 0x01);
+    gpio_set_value(gpio_db1, (byte >> 1 ) & 0x01);
+    gpio_set_value(gpio_db2, (byte >> 2 ) & 0x01);
+    gpio_set_value(gpio_db3, (byte >> 3 ) & 0x01);
+    gpio_set_value(gpio_db4, (byte >> 4 ) & 0x01);
+    gpio_set_value(gpio_db5, (byte >> 5 ) & 0x01);
+    gpio_set_value(gpio_db6, (byte >> 6 ) & 0x01);
+    gpio_set_value(gpio_db7, (byte >> 7 ) & 0x01);
+
+    gpio_set_value(gpio_rs, rs_value);
+    usleep_range(5, 10);
+
+	gpio_set_value(gpio_en, 1);
+	usleep_range(5, 10);
+	gpio_set_value(gpio_en, 0);
+}
+
+
 void hhg_lcd_send_nibble(u8 byte, bool rs_value)
 {
     gpio_set_value(gpio_db4, (byte >> 0 ) & 0x01);
@@ -352,8 +409,17 @@ void hhg_lcd_send_nibble(u8 byte, bool rs_value)
 
 inline void hhg_lcd_send_command(u8 command)
 {
-    usleep_range(2000, 3000);
-    hhg_lcd_send_nibble(command >> 4, HHG_COMMAND_MODE);
+    if(data_mode_8_bit)
+    {
+        usleep_range(1000, 1500);
+        hhg_lcd_send_byte(command, HHG_COMMAND_MODE);
+    }
+    else
+    {
+        usleep_range(1000, 1500);
+        hhg_lcd_send_nibble(command >> 4, HHG_COMMAND_MODE);
+    }
+    
 }
 
 
@@ -361,12 +427,12 @@ void hhg_lcd_send_char(char byte)
 {
     if(data_mode_8_bit)
     {
-        //TODO: 8 bit mode
+        hhg_lcd_send_byte(byte, HHG_DATA_MODE);
     }
     else
     {
         hhg_lcd_send_nibble(byte >> 4, HHG_DATA_MODE);     // upper
-        usleep_range(2000, 3000);
+        usleep_range(1000, 1500);
         hhg_lcd_send_nibble(byte & 0x0F, HHG_DATA_MODE);   // lower
     }
 }
@@ -381,20 +447,20 @@ void hhg_lcd_send_str(const char buff[])
 
     hhg_lcd_clear();
 
-    u8 line = 1;
+    enum hhg_row row = HHG_FIRST_ROW;
 
-    hhg_lcd_select_line(line);
+    hhg_lcd_select_row(row);
 
     u8 col_counter = 0;
     const char* cursor = buff;
-    while(*cursor != '\0' && line <= HHG_ROWS)
+    while(*cursor != '\0' && row <= HHG_ROWS)
     {
         if(col_counter >= HHG_COLS || *cursor == '\n')
         {
-            line++;
+            row++;
             col_counter = 0;
-            pr_info("line:%u", line);
-            hhg_lcd_select_line(line);
+            pr_info("row:%u", row);
+            hhg_lcd_select_row(row);
             if(*cursor == '\n')
             {
                 cursor++;
@@ -411,41 +477,66 @@ EXPORT_SYMBOL(hhg_lcd_send_str);
 
 void hhg_lcd_clear(void)
 {
-    hhg_lcd_send_command(0x00);
-	hhg_lcd_send_command(0x10);
+    if(data_mode_8_bit)
+    {
+        hhg_lcd_send_command(0x01);
+    }
+    else
+    {
+        hhg_lcd_send_command(0x00);
+	    hhg_lcd_send_command(0x10);
+    }
+    
 }
 EXPORT_SYMBOL(hhg_lcd_clear);
 
-void hhg_lcd_select_line(u8 line)
+void hhg_lcd_select_row(enum hhg_row row)
 {
-    switch (line)
+    if(data_mode_8_bit)
     {
-    case HHG_FIRST_ROW:
-        hhg_lcd_send_command(0x80);
-        hhg_lcd_send_command(0x00);	
-        break;
-    case HHG_SECOND_ROW:
-        hhg_lcd_send_command(0xC0);
-        hhg_lcd_send_command(0x00);
-        break;
-    default:
-        break;
+        switch (row)
+        {
+        case HHG_FIRST_ROW:
+            hhg_lcd_send_command(0x30);
+            break;
+        case HHG_SECOND_ROW:
+            hhg_lcd_send_command(0x38);
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        switch (row)
+        {
+        case HHG_FIRST_ROW:
+            hhg_lcd_send_command(0x80);
+            hhg_lcd_send_command(0x00);	
+            break;
+        case HHG_SECOND_ROW:
+            hhg_lcd_send_command(0xC0);
+            hhg_lcd_send_command(0x00);
+            break;
+        default:
+            break;
+        }
     }
 }
-EXPORT_SYMBOL(hhg_lcd_select_line);
+EXPORT_SYMBOL(hhg_lcd_select_row);
 
 void hhg_lcd_set_flags(u8 flags)
 {
     if(data_mode_8_bit)
     {
-        //TODO: 8 bit mode
+        hhg_lcd_send_command(0x08 | (flags & 0x07)); 
     }
     else
     {
         hhg_lcd_send_command(0x00); //upper
 	    hhg_lcd_send_command(0x80 | ((flags & 0x07) << 4)); //lower
     }
-    usleep_range(50, 100);
+    usleep_range(45, 55);
 }
 EXPORT_SYMBOL(hhg_lcd_set_flags);
 
