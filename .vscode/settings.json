@@ -1,3 +1,10 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode"
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "kernel.h": "c",
+        "module.h": "c",
+        "types.h": "c",
+        "posix_types.h": "c",
+        "type_traits": "c"
+    }
 }
