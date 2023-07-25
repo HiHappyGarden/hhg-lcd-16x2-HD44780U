@@ -14,7 +14,7 @@ To install the module:
 ```
 sudo insmod hhg_lcd.ko gpio_rs=26 gpio_en=19 gpio_db4=13 gpio_db5=6 gpio_db6=5 gpio_db7=11
 ```
-gpio_rs=x gpio_en=x gpio_db4=x gpio_db5=x gpio_db6=x gpio_db7=x orrespond to the pins on the LCD as reported in the documentation linked below.  
+gpio_rs=x gpio_en=x gpio_db4=x gpio_db5=x gpio_db6=x gpio_db7=x correspond to the pins on the LCD as reported in the documentation linked below.  
 
 The above configuration has been tested on a Raspberry Pi 4.  
 
