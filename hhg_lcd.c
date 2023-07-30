@@ -868,4 +868,4 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
 MODULE_DESCRIPTION("Driver for LCD 16x2 management with chip HITACHI HD44780U compatible.");
 MODULE_INFO(intree, "Y");
-MODULE_VERSION("0.90.0");
+MODULE_VERSION("0.90.1");
