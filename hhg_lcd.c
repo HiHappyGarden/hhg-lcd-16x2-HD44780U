@@ -1,6 +1,6 @@
 /***************************************************************************
  * 
- * Hi Happy Garden LCD Driver
+ * Hi Happy Garden LCD HITACHI HD44780U
  * Copyright (C) 2023  Antonio Salsi <passy.linux@zresa.it>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -111,7 +111,7 @@ static void hhg_lcd_free(void);
  * @param gpio_direction The direction of the GPIO pin (input or output).
  * @return `true` if the operation was successful, `false` otherwise.
  */
-static u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
+static bool hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction);
 
 /**
  * @brief Sends one nibble of data to the LCD.
@@ -224,6 +224,59 @@ bool hhg_lcd_init_8_bit(void)
     , gpio_db7
     );
 
+
+    if(!hhg_lcd_pin_setup(gpio_rs, 0))
+    {
+        pr_err("Error to set gpio_rs");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_en, 0))
+    {
+        pr_err("Error to set gpio_en");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db0, 0))
+    {
+        pr_err("Error to set gpio_db0");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db1, 0))
+    {
+        pr_err("Error to set gpio_db1");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db2, 0))
+    {
+        pr_err("Error to set gpio_db2");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db4, 0))
+    {
+        pr_err("Error to set gpio_db4");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db4, 0))
+    {
+        pr_err("Error to set gpio_db4");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db5, 0))
+    {
+        pr_err("Error to set gpio_db5");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db6, 0))
+    {
+        pr_err("Error to set gpio_db6");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db7, 0))
+    {
+        pr_err("Error to set gpio_db7");
+        return false;
+    }
+
+
     //for main timing see manual page 45
     //for timing and command see table 6 page 24
 
@@ -275,12 +328,36 @@ bool hhg_lcd_init_4_bit(void)
     );
 
 
-    hhg_lcd_pin_setup(gpio_rs, 0);
-    hhg_lcd_pin_setup(gpio_en, 0);
-    hhg_lcd_pin_setup(gpio_db4, 0);
-    hhg_lcd_pin_setup(gpio_db5, 0);
-    hhg_lcd_pin_setup(gpio_db6, 0);
-    hhg_lcd_pin_setup(gpio_db7, 0);
+    if(!hhg_lcd_pin_setup(gpio_rs, 0))
+    {
+        pr_err("Error to set gpio_rs");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_en, 0))
+    {
+        pr_err("Error to set gpio_en");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db4, 0))
+    {
+        pr_err("Error to set gpio_db4");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db5, 0))
+    {
+        pr_err("Error to set gpio_db5");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db6, 0))
+    {
+        pr_err("Error to set gpio_db6");
+        return false;
+    }
+    if(!hhg_lcd_pin_setup(gpio_db7, 0))
+    {
+        pr_err("Error to set gpio_db7");
+        return false;
+    }
 
     //for main timing see manual page 45
     //for timing and command see table 6 page 24
@@ -344,31 +421,31 @@ static void hhg_lcd_free(void)
 }
 
 
-u8 hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
+bool hhg_lcd_pin_setup(u8 gpio_number, u8 gpio_direction)
 {
 	u8 ret;
 
 	ret = gpio_request( gpio_number, "GPIO request");
 	if( ret != 0 )	{
 		pr_err("failed to request GPIO %d \n", gpio_number );
-		return ret;
+		return false;
 	}	
 	
 	ret = gpio_export( gpio_number, 0);
 	if( ret != 0 )	{
 		pr_err("failed to export GPIO %d \n", gpio_number );
-		return ret;
+		return false;
 	}
 
 	ret = gpio_direction_output( gpio_number, gpio_direction);
 	if( ret != 0 )	{
 		pr_err("failed to set GPIO direction %d \n", gpio_number );	
-		return ret;
+		return false;
 	}
 
 	gpio_set_value(gpio_number, 0);
 
-	return 0; 
+	return true; 
 }
 
 
@@ -791,4 +868,4 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antonio Salsi <passy.linux@zresa.it>");
 MODULE_DESCRIPTION("Driver for LCD 16x2 management with chip HITACHI HD44780U compatible.");
 MODULE_INFO(intree, "Y");
-MODULE_VERSION("0.90.0");
+MODULE_VERSION("0.90.1");
